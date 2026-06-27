@@ -1,0 +1,43 @@
+---
+const links = [
+  { href: "#features", label: "Features" },
+  { href: "#preview", label: "Preview" },
+  { href: "#mods", label: "Mods" },
+];
+---
+
+<header class="fixed inset-x-0 top-0 z-50 px-4 pt-4">
+  <nav class="mx-auto flex max-w-6xl items-center justify-between gap-4 rounded-2xl glass-panel px-4 py-3 sm:px-6">
+    <a href="/" class="group flex items-center gap-2.5">
+      <img
+        src="/comet-logo.png"
+        alt=""
+        width="36"
+        height="36"
+        class="h-9 w-9 transition-transform group-hover:scale-105"
+      />
+      <span class="font-minecraft text-xl tracking-wide text-white">comet</span>
+    </a>
+
+    <div class="hidden items-center gap-1 md:flex">
+      {links.map((link) => (
+        <a
+          href={link.href}
+          class="rounded-lg px-4 py-2 text-sm text-white/70 transition hover:bg-white/5 hover:text-white"
+        >
+          {link.label}
+        </a>
+      ))}
+    </div>
+
+    <a href="#download" class="btn-gradient rounded-xl px-5 py-2.5 text-sm">
+      Download
+    </a>
+  </nav>
+</header>
+
+<style>
+  .font-minecraft {
+    font-family: 'Fastelar', 'Inter', sans-serif;
+  }
+</style>

@@ -1,1 +1,205 @@
-@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+@font-face {
+  font-family: 'Fastelar';
+  src: url('/fonts/FastelarDemo-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --bg: 220 18% 4%;
+    --fg: 40 20% 96%;
+    --muted: 220 10% 55%;
+    --pink: 309 92% 91%;
+    --pink-deep: 309 70% 65%;
+    --emerald: 152 55% 45%;
+    --sky: 195 80% 55%;
+    --glass: 220 20% 98% / 0.05;
+    --glass-border: 220 20% 98% / 0.1;
+    --radius: 0.75rem;
+  }
+
+  * { box-sizing: border-box; }
+
+  html {
+    scroll-behavior: smooth;
+    color-scheme: dark;
+  }
+
+  body {
+    @apply antialiased;
+    font-family: 'Inter', system-ui, sans-serif;
+    background: hsl(var(--bg));
+    color: hsl(var(--fg));
+    overflow-x: hidden;
+  }
+
+  ::selection {
+    background: hsl(var(--pink) / 0.35);
+    color: white;
+  }
+}
+
+@layer components {
+  .mc-grid {
+    background-image:
+      linear-gradient(hsl(var(--glass-border)) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(var(--glass-border)) 1px, transparent 1px);
+    background-size: 32px 32px;
+    mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, black, transparent);
+  }
+
+  .concept-bg {
+    background-image:
+      linear-gradient(180deg, hsl(220 25% 6% / 0.55) 0%, hsl(220 25% 4% / 0.88) 45%, hsl(220 25% 3% / 0.98) 100%),
+      linear-gradient(120deg, hsl(var(--pink) / 0.14) 0%, hsl(var(--emerald) / 0.08) 40%, transparent 70%),
+      radial-gradient(ellipse 70% 50% at 80% 10%, hsl(var(--sky) / 0.12), transparent 60%),
+      url('/hero-birch-forest.jpg');
+    background-size: cover;
+    background-position: center 25%;
+    background-attachment: fixed;
+  }
+
+  .concept-bg-soft {
+    background-image:
+      linear-gradient(180deg, hsl(220 25% 4% / 0.95) 0%, hsl(220 25% 4% / 0.98) 100%),
+      linear-gradient(135deg, hsl(var(--pink) / 0.06) 0%, hsl(var(--emerald) / 0.04) 100%),
+      url('/hero-aurora.jpg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+  }
+
+  .glass-panel {
+    background: hsl(var(--glass));
+    border: 1px solid hsl(var(--glass-border));
+    backdrop-filter: blur(24px) saturate(130%);
+    -webkit-backdrop-filter: blur(24px) saturate(130%);
+    box-shadow:
+      0 1px 0 hsl(220 20% 98% / 0.06) inset,
+      0 24px 64px hsl(220 30% 2% / 0.5);
+  }
+
+  .btn-gradient {
+    position: relative;
+    isolation: isolate;
+    background: linear-gradient(
+      135deg,
+      hsl(var(--pink)) 0%,
+      hsl(var(--pink-deep)) 45%,
+      hsl(var(--emerald)) 100%
+    );
+    color: hsl(220 25% 6%);
+    font-weight: 600;
+    box-shadow:
+      0 0 0 1px hsl(var(--pink) / 0.3),
+      0 8px 32px hsl(var(--pink) / 0.25),
+      0 4px 16px hsl(var(--emerald) / 0.15);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+  }
+
+  .btn-gradient::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(180deg, hsl(0 0% 100% / 0.35) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: -1;
+  }
+
+  .btn-gradient:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.05);
+    box-shadow:
+      0 0 0 1px hsl(var(--pink) / 0.45),
+      0 12px 40px hsl(var(--pink) / 0.35),
+      0 6px 20px hsl(var(--emerald) / 0.2);
+  }
+
+  .btn-outline {
+    background: hsl(220 20% 98% / 0.04);
+    border: 1px solid hsl(220 20% 98% / 0.14);
+    color: hsl(var(--fg));
+    backdrop-filter: blur(12px);
+    transition: border-color 0.2s, background 0.2s, transform 0.2s;
+  }
+
+  .btn-outline:hover {
+    border-color: hsl(var(--pink) / 0.4);
+    background: hsl(var(--pink) / 0.06);
+    transform: translateY(-1px);
+  }
+
+  .text-gradient {
+    background: linear-gradient(
+      165deg,
+      hsl(0 0% 100%) 0%,
+      hsl(var(--pink)) 45%,
+      hsl(var(--emerald)) 100%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .block-corner {
+    position: relative;
+  }
+
+  .block-corner::before,
+  .block-corner::after {
+    content: '';
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    border: 2px solid hsl(var(--pink) / 0.35);
+    pointer-events: none;
+  }
+
+  .block-corner::before {
+    top: -1px;
+    left: -1px;
+    border-right: none;
+    border-bottom: none;
+  }
+
+  .block-corner::after {
+    bottom: -1px;
+    right: -1px;
+    border-left: none;
+    border-top: none;
+  }
+
+  .marquee-track {
+    animation: marquee 35s linear infinite;
+  }
+
+  @keyframes marquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+
+  .float { animation: float 5s ease-in-out infinite; }
+
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .fade-up {
+    animation: fade-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+}

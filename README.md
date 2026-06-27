@@ -1,43 +1,53 @@
-# Astro Starter Kit: Minimal
+# Comet Web
+
+Public Comet Client site built with [Astro](https://astro.build) + React islands. All data is fetched from the **Comet DB proxy** API.
+
+## Setup
 
 ```sh
-npm create astro@latest -- --template minimal
+cp .env.example .env
+npm install
+npm run dev
 ```
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+Dev server: `http://localhost:4321` — `/api/*` is proxied to `comet-db-proxy.mrrpmeowfurry.dev`.
 
-## 🚀 Project Structure
+## API
 
-Inside of your Astro project, you'll see the following folders and files:
+Base URL: `PUBLIC_API_URL` (default `https://comet-db-proxy.mrrpmeowfurry.dev`)
+
+| Method | Path | Used by |
+|--------|------|---------|
+| GET | `/api/health` | health check |
+| GET | `/api/products` | store (`?slug=` for one product) |
+| GET | `/api/launcher/announcements` | launcher + `/api/launcher/announcements` route |
+| GET | `/api/blog_posts` | blog (when available) |
+| GET | `/api/service_status` | home status strip, status page |
+| GET | `/api/jobs` | jobs page |
+| POST | `/api/auth/login` | support sign-in |
+| POST | `/api/tickets` | support tickets |
+| POST | `/api/beta/verify` | beta auth |
+| POST | `/api/beta/download` | beta downloads |
+| POST | `/api/orders` | store checkout |
+
+Client helpers live in `src/lib/api.ts`. Endpoints that return 404 show empty UI until the proxy adds them.
+
+## Structure
 
 ```text
-/
-├── public/
-├── src/
-│   └── pages/
-│       └── index.astro
-└── package.json
+src/
+  lib/api.ts         API client → comet-db-proxy
+  pages/             Astro routes
+  react/pages/       React page components
+  components/site/   UI
+server/              optional local MySQL Express API
+worker.js            Cloudflare Worker — proxies /api/*, serves dist/
 ```
 
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
+## Commands
 
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
-
-Any static assets, like images, can be placed in the `public/` directory.
-
-## 🧞 Commands
-
-All commands are run from the root of the project, from a terminal:
-
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
-
-## 👀 Want to learn more?
-
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+| Command | Action |
+| --- | --- |
+| `npm run dev` | Astro dev server |
+| `npm run build` | Static build → `dist/` |
+| `npm run deploy` | Build + Cloudflare Worker deploy |

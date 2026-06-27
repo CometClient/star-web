@@ -1,0 +1,13 @@
+name = "comet-web-cf-worker-testing"
+main = "worker.js"
+
+site = { bucket = "./dist" }
+
+compatibility_date = "2026-05-21"
+#env
+[vars]
+#DB_HOST = "@db_host"
+#DB_USER = "@db_user"
+#DB_PASSWORD = "@db_password"
+#DB_NAME = "@db_name"
+API_URL = "https://comet-db-proxy.mrrpmeowfurry.dev"

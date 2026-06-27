@@ -1,0 +1,35 @@
+---
+const mods = [
+  "Sodium", "Iris", "Lithium", "FerriteCore", "Entity Culling",
+  "Mod Menu", "Fabric API", "Cloth Config", "Zoomify", "AppleSkin",
+  "Xaero's Minimap", "Xaero's World Map", "Freecam", "Dynamic FPS",
+  "BetterF3", "Smooth Boot", "LazyDFU", "Krypton",
+];
+const doubled = [...mods, ...mods];
+---
+
+<section id="mods" class="overflow-hidden border-y border-white/5 py-16">
+  <div class="mx-auto mb-8 max-w-6xl px-4 sm:px-6">
+    <p class="font-mono text-xs uppercase tracking-[0.25em] text-emerald-400/80">Pre-installed</p>
+    <h2 class="font-minecraft mt-2 text-3xl text-white">Mod pack included</h2>
+  </div>
+
+  <div class="relative">
+    <div class="pointer-events-none absolute inset-y-0 left-0 z-10 w-24 bg-gradient-to-r from-[hsl(220,18%,4%)] to-transparent" />
+    <div class="pointer-events-none absolute inset-y-0 right-0 z-10 w-24 bg-gradient-to-l from-[hsl(220,18%,4%)] to-transparent" />
+
+    <div class="marquee-track flex w-max gap-3">
+      {doubled.map((mod) => (
+        <span class="glass-panel shrink-0 rounded-lg px-5 py-2.5 font-mono text-sm text-white/70">
+          {mod}
+        </span>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .font-minecraft {
+    font-family: 'Fastelar', 'Inter', sans-serif;
+  }
+</style>
