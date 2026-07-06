@@ -38,6 +38,3 @@ pnpm db:migrate   # apply migrations
 pnpm db:seed      # migrate + seed sample content
 ```
 
-## Design assets
-
-Replace `public/hero-concept.png` with your own Minecraft concept art. The hero uses a bottom gradient fade into `#09090c`.
