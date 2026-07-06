@@ -1,0 +1,51 @@
+---
+const items = [
+  {
+    title: "What is Comet?",
+    body: "Comet is the next generation of Minecraft launchers. With a focus on performance, stability, and more. We allow you to customize your experience to your liking. From making profiles, to servers from the launcher, we aim to be the most customizable launcher.",
+  },
+  {
+    title: "How do I get beta access?",
+    body: "We are currently in our closed/private beta phase. To join the team, please contact us on Discord.",
+  },
+  {
+    title: "What's different from other launchers?",
+    body: "We are a team of small developers who aim to one day compete with Lunar and more. We aren't afraid to innovate and try new things. We are also not afraid to fail and learn from our mistakes. We thrive to be the next biggest thing for Minecraft."
+  },
+  {
+    title: "Can I add my own mods?",
+    body: "Yes. Drop any Fabric jar into your instance folder. We validate compatibility, resolve dependencies, and load everything cleanly on next launch. We also have a built-in mod conflict resolver and mod manager to help you manage your mods without any additional software. This means you can get back to gaming and not having to worry about debugging issues.",
+  },
+];
+---
+
+<section id="dive-in" class="page-body border-y border-white/5 py-24 sm:py-32">
+  <div class="mx-auto max-w-5xl px-4 sm:px-6">
+    <div class="tier-header mb-12 inline-block px-6 py-5">
+      <p class="font-pixel text-[10px] tracking-[0.25em] text-white/40">Learn more</p>
+      <h2 class="font-pixel mt-2 text-3xl text-gradient-gold sm:text-4xl">Dive in</h2>
+      <p class="mt-3 max-w-md text-sm text-white/45">Everything you need before your first launch.</p>
+    </div>
+
+    <div class="space-y-0 divide-y divide-white/6 border border-white/5 bg-[hsl(228,12%,6%)]">
+      {items.map((item, i) => (
+        <details class="group dive-item" open={i === 0}>
+          <summary class="dive-item__summary">
+            <span class="font-pixel text-sm text-white/90 group-open:text-gradient-gold sm:text-base">{item.title}</span>
+            <span class="dive-item__chevron font-mono text-white/30" aria-hidden="true">+</span>
+          </summary>
+          <div class="dive-item__body">
+            <p>{item.body}</p>
+          </div>
+        </details>
+      ))}
+    </div>
+
+    <div class="mt-10 flex flex-wrap gap-3">
+      <button type="button" class="btn-pixel btn-pixel--pink" data-download-sheet-open>
+        Join closed beta
+      </button>
+      <a href="/news" class="btn-pixel btn-pixel--blue">Read the news</a>
+    </div>
+  </div>
+</section>

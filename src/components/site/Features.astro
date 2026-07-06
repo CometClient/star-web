@@ -1,0 +1,67 @@
+---
+const features = [
+  {
+    num: "01",
+    tag: "Loader",
+    title: "Fabric on every version",
+    body: "Pick 1.20.x, 1.21.x, or earlier versions. We resolve the right Fabric loader and mod set automatically.",
+    accent: "pink",
+  },
+  {
+    num: "02",
+    tag: "Performance",
+    title: "2× frames out of the box",
+    body: "Pre-configured mods to help you get started with your favorite game modes and more.",
+    accent: "ocean",
+  },
+  {
+    num: "03",
+    tag: "Mods",
+    title: "15+ curated mods",
+    body: "QoL, visuals, and maps — version-locked and tested together. Toggle anything from one panel.",
+    accent: "emerald",
+  },
+  {
+    num: "04",
+    tag: "Custom",
+    title: "Drop in your jars",
+    body: "Any Fabric mod in your instance folder loads on next launch. We validate and resolve dependencies.",
+    accent: "pink",
+  },
+  {
+    num: "05",
+    tag: "UI",
+    title: "Native desktop app",
+    body: "Manage instances, profiles, and friends from a real app — not a browser tab or Java popup.",
+    accent: "ocean",
+  },
+  {
+    num: "06",
+    tag: "Cosmetics",
+    title: "Free capes & cloaks",
+    body: "Seasonal drops crafted by our team. No hidden paywalls or costs.",
+    accent: "emerald",
+  },
+];
+---
+
+<section id="features" class="page-body py-24 sm:py-32">
+  <div class="mx-auto max-w-5xl px-4 sm:px-6">
+    <div class="tier-header mb-14 inline-block px-6 py-5">
+      <p class="font-pixel text-[10px] tracking-[0.25em] text-white/40">Features</p>
+      <h2 class="font-pixel mt-2 text-3xl text-gradient-gold sm:text-4xl">What Comet ships</h2>
+      <p class="mt-3 max-w-md text-sm text-white/45">Accurate today — no vaporware.</p>
+    </div>
+
+    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {features.map((f) => (
+        <article class={`feature-card-v2 feature-card-v2--${f.accent}`}>
+          <div class="feature-card-v2__num font-mono">{f.num}</div>
+          <p class="feature-card-v2__tag font-mono">{f.tag}</p>
+          <h3 class="feature-card-v2__title font-pixel">{f.title}</h3>
+          <p class="feature-card-v2__body">{f.body}</p>
+        </article>
+      ))}
+    </div>
+  </div>
+</section>

@@ -1,0 +1,65 @@
+---
+import SiteLayout from "../layouts/SiteLayout.astro";
+import Header from "../components/site/Header.astro";
+import FloatingFooter from "../components/site/FloatingFooter.astro";
+---
+
+<SiteLayout title="Privacy Policy — Comet Client" description="Comet Client Privacy Policy.">
+  <Header />
+  <main class="flex min-h-screen flex-col">
+    <div class="hero-concept hero-concept--short relative h-64 sm:h-72">
+      <div class="hero-concept__bg" aria-hidden="true"></div>
+      <div class="relative z-[1] flex h-full items-end">
+        <div class="mx-auto w-full max-w-3xl px-4 pb-10 sm:px-6">
+          <p class="font-pixel text-[10px] tracking-[0.2em] text-white/40">Legal</p>
+          <h1 class="font-pixel mt-2 text-4xl text-gradient-gold sm:text-5xl">Privacy Policy</h1>
+        </div>
+      </div>
+    </div>
+
+    <article class="page-body legal-prose mx-auto max-w-3xl flex-1 px-4 py-14 sm:px-6">
+      <p>We respect your privacy. This policy outlines what we collect and why.</p>
+
+      <h2>What we collect</h2>
+      <p>
+        Anonymous crash reports, basic usage analytics (which features are used), and your
+        Minecraft username for cosmetics rendering.
+      </p>
+
+      <h2>What we don't collect</h2>
+      <p>
+        We never collect chat messages, world data, IP logs beyond the session, or your
+        Microsoft password.
+      </p>
+
+      <h2>Cookies</h2>
+      <p>Our website uses essential cookies only. No third-party trackers.</p>
+
+      <h2>Your rights</h2>
+      <p>
+        You may request deletion of any data we hold about you by emailing
+        privacy@cometclient.gg.
+      </p>
+    </article>
+
+    <FloatingFooter />
+  </main>
+</SiteLayout>
+
+<style>
+  .legal-prose :global(h2) {
+    font-family: 'MultiTypePixel', 'Inter', sans-serif;
+    font-size: 1.125rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: hsl(0 0% 100% / 0.9);
+    margin-top: 2rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .legal-prose :global(p) {
+    color: hsl(0 0% 100% / 0.55);
+    line-height: 1.7;
+    margin-bottom: 1rem;
+  }
+</style>

@@ -1,0 +1,50 @@
+---
+import SiteLayout from "../../layouts/SiteLayout.astro";
+import Header from "../../components/site/Header.astro";
+import FloatingFooter from "../../components/site/FloatingFooter.astro";
+import { getNewsBySlug } from "../../lib/db";
+import { renderNewsMarkdown } from "../../lib/markdown";
+import NewsAuthorMeta from "../../components/news/NewsAuthorMeta.astro";
+
+const { slug } = Astro.params;
+const post = slug ? getNewsBySlug(slug) : undefined;
+
+if (!post || !post.published) {
+  return Astro.redirect("/news");
+}
+
+const html = renderNewsMarkdown(post.body_md);
+---
+
+<SiteLayout title={`${post.title} — Comet Client`}>
+  <Header />
+  <main class="flex min-h-screen flex-col">
+    <div class="page-body flex-1 pt-28 pb-16">
+      <article class="mx-auto max-w-3xl px-4 sm:px-6">
+        <a href="/news" class="btn-pixel btn-pixel--blue btn-pixel--sm mb-8 inline-flex">← News</a>
+
+        {post.cover_url && (
+          <div class="article-cover block-corner">
+            <img src={post.cover_url} alt="" loading="eager" />
+          </div>
+        )}
+
+        <header class="mb-10 border-b border-white/5 pb-8">
+          {post.pinned ? (
+            <span class="font-pixel mb-4 inline-block border border-pink-400/30 bg-pink-400/5 px-2 py-1 text-[10px] tracking-widest text-pink-200">
+              Pinned
+            </span>
+          ) : null}
+          <h1 class="font-pixel text-3xl leading-tight text-gradient-gold sm:text-4xl">{post.title}</h1>
+          {post.excerpt && <p class="mt-4 text-lg leading-relaxed text-white/45">{post.excerpt}</p>}
+          <div class="mt-6">
+            <NewsAuthorMeta post={post} size="md" />
+          </div>
+        </header>
+
+        <div class="prose-comet" set:html={html} />
+      </article>
+    </div>
+    <FloatingFooter />
+  </main>
+</SiteLayout>

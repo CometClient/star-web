@@ -63,7 +63,7 @@ export function SiteHeader() {
 
           <nav className="hidden md:flex items-center gap-1">
             <NavLink to="/" end className={({ isActive }) => cn("px-3 py-2 text-sm font-medium rounded-full transition-colors inline-flex items-center gap-1.5",
-              isActive ? "text-primary bg-primary/5" : "text-muted-foreground hover:text-foreground")}>
+              isActive ? "text-primary bg-primary/5" : "text-muted-foreground hover:text-foreground rounded-full")}>
               <Home size={14} /> Home
             </NavLink>
 
@@ -71,7 +71,7 @@ export function SiteHeader() {
               <div key={cat.label} className="relative" onMouseEnter={() => openCat(cat.label)} onMouseLeave={closeCat}>
                 <button
                   className={cn("px-3 py-2 text-sm font-medium rounded-full transition-colors inline-flex items-center gap-1",
-                    activeCat === cat.label ? "text-primary bg-primary/5" : "text-muted-foreground hover:text-foreground")}
+                    activeCat === cat.label ? "text-primary bg-primary/5" : "text-muted-foreground hover:text-foreground rounded-full")}
                 >
                   {cat.label}
                   <ChevronDown size={12} className={cn("transition-transform", activeCat === cat.label && "rotate-180")} />
@@ -88,8 +88,8 @@ export function SiteHeader() {
                       <div className="rounded-2xl p-2 bg-[rgba(12,12,16,0.92)] backdrop-blur-xl border border-white/[0.08] shadow-[0_16px_48px_rgba(0,0,0,0.8),0_4px_12px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.07)]">
                         {cat.items.map((it) => (
                           <Link key={it.to} to={it.to}
-                            className="flex items-start gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5 transition-colors group">
-                            <div className="w-8 h-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors">
+                            className="flex items-start gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5 transition-colors group rounded-full">
+                            <div className="w-8 h-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors rounded-full">
                               <it.icon size={14} className="text-primary" />
                             </div>
                             <div className="min-w-0">
@@ -136,7 +136,7 @@ export function SiteHeader() {
                   {cat.items.map((it) => (
                     <NavLink key={it.to} to={it.to} onClick={() => setOpen(false)}
                       className={({ isActive }) => cn("flex items-center gap-2 px-3 py-2 rounded-lg text-sm",
-                        isActive ? "text-primary bg-primary/5" : "text-muted-foreground hover:text-foreground")}>
+                        isActive ? "text-primary bg-primary/5" : "text-muted-foreground hover:text-foreground rounded-full")}>
                       <it.icon size={14} /> {it.label}
                     </NavLink>
                   ))}

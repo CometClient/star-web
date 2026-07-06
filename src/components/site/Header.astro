@@ -1,0 +1,85 @@
+---
+const nav = [
+  { href: "/#features", label: "Features" },
+  { href: "/#dive-in", label: "Dive In" },
+  { href: "/news", label: "News" },
+  { href: "/staff", label: "Staff" },
+];
+---
+
+<header class="fixed inset-x-0 top-0 z-50 px-4 pt-4">
+  <nav class="glass mx-auto flex max-w-5xl items-center justify-between gap-3 rounded-xl px-4 py-2.5 sm:px-5">
+    <a href="/" class="flex shrink-0 items-center gap-2.5">
+      <img src="/comet-logo.png" alt="" width="32" height="32" class="h-8 w-8" />
+      <span class="font-pixel text-lg text-white">comet</span>
+    </a>
+
+    <div class="hidden items-center gap-1 md:flex">
+      {nav.map((item) => (
+        <a href={item.href} class="nav-link">
+          {item.label}
+        </a>
+      ))}
+    </div>
+
+    <div class="flex items-center gap-2">
+      <button
+        type="button"
+        class="btn-pixel btn-pixel--pink hidden text-xs sm:inline-flex"
+        data-download-sheet-open
+      >
+        Join beta
+      </button>
+
+      <button
+        type="button"
+        class="mobile-nav-toggle md:hidden"
+        data-mobile-nav-toggle
+        aria-expanded="false"
+        aria-controls="mobile-nav"
+        aria-label="Open menu"
+      >
+        <span class="mobile-nav-toggle__bar"></span>
+        <span class="mobile-nav-toggle__bar"></span>
+        <span class="mobile-nav-toggle__bar"></span>
+      </button>
+    </div>
+  </nav>
+
+  <div id="mobile-nav" class="mobile-nav" data-mobile-nav aria-hidden="true">
+    <div class="mobile-nav__inner glass">
+      {nav.map((item) => (
+        <a href={item.href} class="mobile-nav__link btn-pixel btn-pixel--blue mobile-nav__btn" data-mobile-nav-link>
+          {item.label}
+        </a>
+      ))}
+      <button type="button" class="btn-pixel btn-pixel--pink w-full" data-download-sheet-open data-mobile-nav-link>
+        Join beta
+      </button>
+    </div>
+  </div>
+</header>
+
+<script>
+  const toggle = document.querySelector<HTMLButtonElement>("[data-mobile-nav-toggle]");
+  const nav = document.querySelector<HTMLElement>("[data-mobile-nav]");
+
+  function closeMobileNav() {
+    nav?.classList.remove("is-open");
+    toggle?.setAttribute("aria-expanded", "false");
+    toggle?.classList.remove("is-open");
+    nav?.setAttribute("aria-hidden", "true");
+  }
+
+  toggle?.addEventListener("click", () => {
+    const open = !nav?.classList.contains("is-open");
+    nav?.classList.toggle("is-open", open);
+    toggle.classList.toggle("is-open", open);
+    toggle.setAttribute("aria-expanded", open ? "true" : "false");
+    nav?.setAttribute("aria-hidden", open ? "false" : "true");
+  });
+
+  document.querySelectorAll("[data-mobile-nav-link]").forEach((el) => {
+    el.addEventListener("click", closeMobileNav);
+  });
+</script>

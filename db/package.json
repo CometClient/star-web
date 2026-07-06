@@ -1,0 +1,11 @@
+{
+  "name": "@comet/db",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Comet CMS database migrations — deploy separately to update production DB",
+  "type": "module",
+  "scripts": {
+    "migrate": "node migrate.mjs",
+    "seed": "node migrate.mjs --seed"
+  }
+}

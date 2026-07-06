@@ -1,53 +1,43 @@
 # Comet Web
 
-Public Comet Client site built with [Astro](https://astro.build) + React islands. All data is fetched from the **Comet DB proxy** API.
+Modern Minecraft launcher marketing site with local CMS.
+
+## Pages
+
+| Route | Description |
+|-------|-------------|
+| `/` | Homepage with concept art hero |
+| `/news` | News listing |
+| `/news/[slug]` | News article |
+| `/staff` | Public team page |
+| `/local/staff` | Staff CMS (news + team editor) |
+| `/api/launcher/announcements` | Launcher API (proxies external DB) |
+| `/api/news`, `/api/staff` | CMS read/write API |
 
 ## Setup
 
-```sh
-cp .env.example .env
-npm install
-npm run dev
+```bash
+pnpm install
+pnpm db:seed          # migrate + seed SQLite
+cp .env.example .env  # optional overrides
+pnpm dev
 ```
 
-Dev server: `http://localhost:4321` — `/api/*` is proxied to `comet-db-proxy.mrrpmeowfurry.dev`.
+## Staff CMS login
 
-## API
+- **URL:** `/local/staff`
+- **Email:** `ray.dev@cometclient.dev`
+- **Password:** `Cm7t_Xk9pR2mNwQ4` (override via `STAFF_PASSWORD` in `.env`)
 
-Base URL: `PUBLIC_API_URL` (default `https://comet-db-proxy.mrrpmeowfurry.dev`)
+## Database
 
-| Method | Path | Used by |
-|--------|------|---------|
-| GET | `/api/health` | health check |
-| GET | `/api/products` | store (`?slug=` for one product) |
-| GET | `/api/launcher/announcements` | launcher + `/api/launcher/announcements` route |
-| GET | `/api/blog_posts` | blog (when available) |
-| GET | `/api/service_status` | home status strip, status page |
-| GET | `/api/jobs` | jobs page |
-| POST | `/api/auth/login` | support sign-in |
-| POST | `/api/tickets` | support tickets |
-| POST | `/api/beta/verify` | beta auth |
-| POST | `/api/beta/download` | beta downloads |
-| POST | `/api/orders` | store checkout |
+Migrations live in `db/` as a deployable sub-repo. Local SQLite defaults to `db/data/comet.db`.
 
-Client helpers live in `src/lib/api.ts`. Endpoints that return 404 show empty UI until the proxy adds them.
-
-## Structure
-
-```text
-src/
-  lib/api.ts         API client → comet-db-proxy
-  pages/             Astro routes
-  react/pages/       React page components
-  components/site/   UI
-server/              optional local MySQL Express API
-worker.js            Cloudflare Worker — proxies /api/*, serves dist/
+```bash
+pnpm db:migrate   # apply migrations
+pnpm db:seed      # migrate + seed sample content
 ```
 
-## Commands
+## Design assets
 
-| Command | Action |
-| --- | --- |
-| `npm run dev` | Astro dev server |
-| `npm run build` | Static build → `dist/` |
-| `npm run deploy` | Build + Cloudflare Worker deploy |
+Replace `public/hero-concept.png` with your own Minecraft concept art. The hero uses a bottom gradient fade into `#09090c`.

@@ -1,0 +1,94 @@
+---
+import DownloadButton from "./DownloadButton.astro";
+---
+
+<section class="hero-concept relative min-h-[100dvh] overflow-hidden">
+  <div class="hero-concept__bg" aria-hidden="true"></div>
+
+  <div class="relative z-[1] mx-auto flex min-h-[100dvh] max-w-6xl flex-col justify-end px-4 pb-20 pt-32 sm:px-6 sm:pb-28">
+    <div id="announcement" class="mb-8 hidden max-w-md">
+      <a href="#" class="glass inline-flex items-center gap-2.5 rounded-full px-4 py-2 text-sm text-white/75 transition hover:border-white/15">
+        <span class="h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-400 shadow-[0_0_6px_#34d399]"></span>
+        <span id="announcement-text" class="truncate"></span>
+        <span class="text-white/35">→</span>
+      </a>
+    </div>
+
+    <div class="grid items-end gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] lg:gap-12">
+      <div class="min-w-0">
+        <p class="font-pixel mb-5 text-[11px] tracking-[0.2em] text-white/40">
+          Fabric · Java 21 · Closed beta
+        </p>
+
+        <h1 class="font-pixel mb-6 text-[clamp(2.25rem,6vw,3.75rem)] leading-[1.02]">
+          <span class="text-gradient-ocean">Dive in.</span>
+          <br />
+          <span class="text-white">Launch </span>
+          <span class="hero-rotate inline-block min-w-[5.5ch] align-bottom">
+            <span id="hero-rotate-word" class="hero-rotate__word text-gradient-gold">faster.</span>
+          </span>
+        </h1>
+
+        <p class="mb-9 max-w-md text-base leading-relaxed text-white/55 sm:text-lg">
+         The next generation of Minecraft launchers. With a focus on performance, stability, and more.
+        </p>
+
+        <div class="flex flex-wrap items-start gap-3">
+          <DownloadButton />
+          <a href="#features" class="btn-pixel btn-pixel--blue shrink-0 self-start">See features</a>
+        </div>
+      </div>
+
+      <div class="hero-preview hidden md:block">
+        <div class="hero-preview__frame">
+          <div class="flex items-center gap-2 border-b border-white/10 bg-black/50 px-4 py-2.5">
+            <span class="h-2.5 w-2.5 rounded-full bg-red-500/80"></span>
+            <span class="h-2.5 w-2.5 rounded-full bg-yellow-500/80"></span>
+            <span class="h-2.5 w-2.5 rounded-full bg-green-500/80"></span>
+            <span class="ml-2 font-mono text-[10px] text-white/35">comet · fabric</span>
+          </div>
+          <img
+            src="/launcher-preview.jpg"
+            alt="Comet launcher"
+            width="800"
+            height="500"
+            class="hero-preview__img"
+            loading="eager"
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  const rotateWords = ["faster.", "smarter.", "smoother.", "cleaner.", "better.", "stronger."];
+  let rotateIndex = 0;
+  const rotateEl = document.getElementById("hero-rotate-word");
+
+  if (rotateEl) {
+    setInterval(() => {
+      rotateEl.classList.add("is-out");
+      setTimeout(() => {
+        rotateIndex = (rotateIndex + 1) % rotateWords.length;
+        rotateEl.textContent = rotateWords[rotateIndex];
+        rotateEl.classList.remove("is-out");
+      }, 220);
+    }, 2600);
+  }
+
+  fetch("/api/launcher/announcements")
+    .then((r) => r.json())
+    .then((data) => {
+      const item = Array.isArray(data) ? data.find((a) => a.is_active) ?? data[0] : null;
+      if (!item?.announcement) return;
+      const banner = document.getElementById("announcement");
+      const text = document.getElementById("announcement-text");
+      if (!banner || !text) return;
+      text.textContent = item.announcement;
+      banner.classList.remove("hidden");
+      const link = banner.querySelector("a");
+      if (link && item.redirect_url) link.href = item.redirect_url;
+    })
+    .catch(() => {});
+</script>

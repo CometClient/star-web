@@ -1,0 +1,38 @@
+---
+import type { NewsPost } from "../../lib/db";
+import { formatNewsDate, readMinutes } from "../../lib/news-format";
+import NewsAuthorMeta from "./NewsAuthorMeta.astro";
+
+interface Props {
+  post: NewsPost;
+  featured?: boolean;
+}
+
+const { post, featured = false } = Astro.props;
+---
+
+<a href={`/news/${post.slug}`} class={`news-card-v2 ${featured ? "news-card-v2--featured" : ""}`}>
+  <div class="news-card-v2__media">
+    {post.cover_url ? (
+      <img src={post.cover_url} alt="" loading="lazy" />
+    ) : (
+      <div class="news-card-v2__placeholder" aria-hidden="true"></div>
+    )}
+    <div class="news-card-v2__media-shade"></div>
+    {post.pinned ? <span class="news-card-v2__badge font-pixel">Pinned</span> : null}
+  </div>
+
+  <div class="news-card-v2__content">
+    <div class="news-card-v2__meta font-mono">
+      <span>{post.published_at ? formatNewsDate(post.published_at) : "Draft"}</span>
+      <span class="text-white/20">·</span>
+      <span>{readMinutes(post)} min read</span>
+    </div>
+    <h2 class="news-card-v2__title font-pixel">{post.title}</h2>
+    {post.excerpt && <p class="news-card-v2__excerpt">{post.excerpt}</p>}
+    <div class="news-card-v2__foot">
+      <NewsAuthorMeta post={post} size="sm" />
+      <span class="news-card-v2__link font-pixel">Read →</span>
+    </div>
+  </div>
+</a>

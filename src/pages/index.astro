@@ -1,22 +1,47 @@
 ---
-import Layout from "../layouts/Layout.astro";
-import Header from "../components/home/Header.astro";
-import Hero from "../components/home/Hero.astro";
-import Features from "../components/home/Features.astro";
-import ModsStrip from "../components/home/ModsStrip.astro";
-import Preview from "../components/home/Preview.astro";
-import Download from "../components/home/Download.astro";
-import Footer from "../components/home/Footer.astro";
+import SiteLayout from "../layouts/SiteLayout.astro";
+import Header from "../components/site/Header.astro";
+import Hero from "../components/site/Hero.astro";
+import Features from "../components/site/Features.astro";
+import Showcase from "../components/site/Showcase.astro";
+import DiveIn from "../components/site/DiveIn.astro";
+import ModsStrip from "../components/site/ModsStrip.astro";
+import FloatingFooter from "../components/site/FloatingFooter.astro";
+import { listNews } from "../lib/db";
+import NewsCard from "../components/news/NewsCard.astro";
+
+const latestNews = listNews(true).slice(0, 3);
 ---
 
-<Layout>
+<SiteLayout>
   <Header />
-  <main>
+  <main class="flex min-h-screen flex-col">
     <Hero />
+
+    {latestNews.length > 0 && (
+      <section class="page-body border-t border-[hsl(228,10%,11%)] py-20">
+        <div class="mx-auto max-w-5xl px-4 sm:px-6">
+          <div class="mb-8 flex items-end justify-between gap-4">
+            <div>
+              <p class="font-pixel text-[10px] uppercase tracking-[0.2em] text-white/35">Latest</p>
+              <h2 class="font-pixel mt-1 text-2xl text-gradient-gold">News</h2>
+            </div>
+            <a href="/news" class="btn-pixel btn-pixel--blue btn-pixel--sm hidden sm:inline-flex">All posts</a>
+          </div>
+          <div class="news-grid-home">
+            {latestNews.map((post, i) => (
+              <NewsCard post={post} featured={i === 0} />
+            ))}
+          </div>
+          <a href="/news" class="btn-pixel btn-pixel--blue btn-pixel--sm mt-6 w-full sm:hidden">All posts</a>
+        </div>
+      </section>
+    )}
+
     <Features />
+    <Showcase />
+    <DiveIn />
     <ModsStrip />
-    <Preview />
-    <Download />
+    <FloatingFooter />
   </main>
-  <Footer />
-</Layout>
+</SiteLayout>
