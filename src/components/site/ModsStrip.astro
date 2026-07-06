@@ -1,53 +1,71 @@
 ---
-const modGroups = [
+const sources = [
   {
-    label: "Performance",
-    color: "pink",
-    mods: ["Polaris (Entity Culling)", "Sodium/Optifine", "LazyDFU", "Minecraft Patcher"],
+    label: "Modrinth",
+    color: "emerald",
+    desc: "Search the catalog and install Fabric mods in one click — version-matched to your instance.",
   },
   {
-    label: "Visuals",
-    color: "ocean",
-    mods: ["Iris", "Comet Zoom", "FPS and Keystrokes", "Enhanced Loading"],
-  },
-  {
-    label: "Quality of life",
+    label: "Modpacks",
     color: "gold",
-    mods: ["Mod Menu", "Freelook", "BetterF3", "Freecam", "Chat Heads"],
+    desc: "Import all your mods with a single click, and Comet handles the rest for you. No extra effort required.",
+  },
+  {
+    label: "Your desktop",
+    color: "ocean",
+    desc: "Drag a .jar from Finder or Explorer. Comet validates, resolves deps, and loads on next launch.",
   },
 ];
 ---
 
 <section id="mods" class="mods-section page-body border-y border-[hsl(228,10%,11%)] py-20 sm:py-24">
   <div class="mx-auto max-w-5xl px-4 sm:px-6">
-    <div class="mb-12 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+    <div class="mods-showcase grid items-center gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] lg:gap-16">
       <div>
-        <p class="font-pixel text-[10px] uppercase tracking-[0.22em] text-white/30">Shipped with Comet</p>
-        <h2 class="font-pixel mt-2 text-3xl text-gradient-gold sm:text-4xl">Built-in mods</h2>
-        <p class="mt-3 max-w-lg text-sm leading-relaxed text-white/45">
-          Curated, version-locked, and configured out of the box. Toggle anything from one panel.
+        <p class="font-pixel text-[10px] uppercase tracking-[0.22em] text-white/30">Mod manager</p>
+        <h2 class="font-pixel mt-2 text-3xl text-gradient-gold sm:text-4xl">Install any mod</h2>
+        <p class="mt-4 max-w-md text-sm leading-relaxed text-white/45">
+          Modrinth, Modpacks, or a file on your desktop — Comet handles compatibility,
+          dependencies, and loading without extra tools.
         </p>
-      </div>
-      <div class="mods-section__stat glass inline-flex shrink-0 items-center gap-3 rounded-lg px-4 py-3">
-        <span class="font-pixel text-2xl text-pink-200">15+</span>
-        <span class="max-w-[8rem] text-xs leading-snug text-white/40">mods pre-installed on first launch</span>
-      </div>
-    </div>
 
-    <div class="mods-grid">
-      {modGroups.map((group) => (
-        <article class={`mods-group mods-group--${group.color}`}>
-          <header class="mods-group__head">
-            <span class="mods-group__dot" aria-hidden="true"></span>
-            <h3 class="font-pixel text-[11px] tracking-[0.14em] text-white/70">{group.label}</h3>
-          </header>
-          <ul class="mods-group__list">
-            {group.mods.map((mod) => (
-              <li class="mods-group__item font-mono">{mod}</li>
-            ))}
-          </ul>
-        </article>
-      ))}
+        <ul class="mt-8 space-y-4">
+          {sources.map((source) => (
+            <li class={`mod-source mod-source--${source.color}`}>
+              <span class="mod-source__dot" aria-hidden="true"></span>
+              <div>
+                <h3 class="font-pixel text-sm tracking-[0.12em] text-white/80">{source.label}</h3>
+                <p class="mt-1 text-xs leading-relaxed text-white/42">{source.desc}</p>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div class="mod-showcase-visual">
+        <div class="mod-showcase__glow" aria-hidden="true"></div>
+        <figure class="mod-showcase__frame">
+          <div class="mod-showcase__chrome" aria-hidden="true">
+            <span class="mod-showcase__dot mod-showcase__dot--red"></span>
+            <span class="mod-showcase__dot mod-showcase__dot--yellow"></span>
+            <span class="mod-showcase__dot mod-showcase__dot--green"></span>
+            <span class="mod-showcase__title">comet · mods</span>
+          </div>
+          <img
+            src="/modshows.png"
+            alt="Comet mod installer — Modrinth, Modpacks, and local files"
+            width="1212"
+            height="832"
+            class="mod-showcase__img"
+            loading="lazy"
+          />
+          <div class="mod-showcase__overlay" aria-hidden="true">
+            <span class="mod-showcase__badge font-pixel">Modrinth</span>
+            <span class="mod-showcase__badge font-pixel">Modpacks</span>
+            <span class="mod-showcase__badge font-pixel">Local .jar</span>
+          </div>
+        </figure>
+      </div>
     </div>
   </div>
 </section>

@@ -11,7 +11,8 @@ Modern Minecraft launcher marketing site with local CMS.
 | `/news/[slug]` | News article |
 | `/staff` | Public team page |
 | `/local/staff` | Staff CMS (news + team editor) |
-| `/api/launcher/announcements` | Launcher API (proxies external DB) |
+| `/api/launcher/announcements` | Active launcher announcements (local SQLite) |
+| `/api/launcher/version` | Latest published launcher build (`?all=1` for full list) |
 | `/api/news`, `/api/staff` | CMS read/write API |
 
 ## Setup

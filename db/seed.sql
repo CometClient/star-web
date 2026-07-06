@@ -50,6 +50,26 @@ Stay tuned for more slots opening soon.',
   0
 );
 
+INSERT OR IGNORE INTO launcher_announcements (id, announcement, redirect_url, is_active, published_at)
+VALUES (
+  1,
+  'Welcome to Comet! Check out the latest update.',
+  '/news',
+  1,
+  datetime('now', '-1 day')
+);
+
+INSERT OR IGNORE INTO launcher_versions (id, version, channel, download_url, notes, published, published_at)
+VALUES (
+  'v0-1-0-beta',
+  '0.1.0-beta.1',
+  'beta',
+  NULL,
+  'Closed beta build — invite required.',
+  1,
+  datetime('now', '-3 days')
+);
+
 INSERT OR IGNORE INTO staff_members (id, display_name, mc_username, role, role_tier, bio, sort_order, published)
 VALUES
   ('staff-ray', 'Ray', 'rxym', 'Lead Developer', 'developer', NULL, 0, 1),

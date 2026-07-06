@@ -207,3 +207,41 @@ export function mcBust(username: string | null | undefined) {
   if (username) return `https://render.crafty.gg/3d/bust/${encodeURIComponent(username)}`;
   return `https://render.crafty.gg/3d/bust/Steve`;
 }
+
+export interface LauncherAnnouncement {
+  id: number;
+  announcement: string;
+  redirect_url: string | null;
+  is_active: number;
+  published_at: string;
+}
+
+export interface LauncherVersion {
+  id: string;
+  version: string;
+  channel: string;
+  download_url: string | null;
+  notes: string | null;
+  published: number;
+  published_at: string | null;
+}
+
+export function listLauncherAnnouncements(activeOnly = true): LauncherAnnouncement[] {
+  const sql = activeOnly
+    ? `SELECT * FROM launcher_announcements WHERE is_active = 1 ORDER BY published_at DESC`
+    : `SELECT * FROM launcher_announcements ORDER BY published_at DESC`;
+  return getDb().prepare(sql).all() as LauncherAnnouncement[];
+}
+
+export function listLauncherVersions(publishedOnly = true): LauncherVersion[] {
+  const sql = publishedOnly
+    ? `SELECT * FROM launcher_versions WHERE published = 1 ORDER BY published_at DESC`
+    : `SELECT * FROM launcher_versions ORDER BY published_at DESC`;
+  return getDb().prepare(sql).all() as LauncherVersion[];
+}
+
+export function getLatestLauncherVersion(): LauncherVersion | undefined {
+  return getDb()
+    .prepare(`SELECT * FROM launcher_versions WHERE published = 1 ORDER BY published_at DESC LIMIT 1`)
+    .get() as LauncherVersion | undefined;
+}

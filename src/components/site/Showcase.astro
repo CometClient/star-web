@@ -1,47 +1,56 @@
 ---
+const serverTypes = ["Paper", "Folia", "Leaf", "Purpur"];
+
+const highlights = [
+  "Spin up Paper, Folia, Leaf, or Purpur — no Java install, no third-party hosting apps.",
+  "RAM scales with your device. Pick a light profile or give your world more headroom.",
+  "Go public with a shareable link or keep the server private for just your friends.",
+  "Friends join straight from the multiplayer menu — no port forwarding or extra setup.",
+];
 ---
 
-<section id="worlds" class="page-body border-y border-white/5 py-24 sm:py-32">
+<section id="servers" class="page-body border-y border-white/5 py-24 sm:py-32">
   <div class="mx-auto max-w-5xl px-4 sm:px-6">
-    <div class="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
-      <div class="order-2 lg:order-1">
-        <div class="showcase-frame block-corner relative overflow-hidden rounded-lg border border-white/10">
+    <div class="grid items-center gap-12 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:gap-16">
+      <div class="mod-showcase-visual order-2 lg:order-1">
+        <div class="mod-showcase__glow" aria-hidden="true"></div>
+        <figure class="mod-showcase__frame mod-showcase__frame--left">
+          <div class="mod-showcase__chrome" aria-hidden="true">
+            <span class="mod-showcase__dot mod-showcase__dot--red"></span>
+            <span class="mod-showcase__dot mod-showcase__dot--yellow"></span>
+            <span class="mod-showcase__dot mod-showcase__dot--green"></span>
+            <span class="mod-showcase__title">comet · servers</span>
+          </div>
           <img
-            src="/hero-concept.png"
-            alt="Minecraft world screenshot"
-            width="960"
-            height="640"
-            class="aspect-[4/3] w-full object-cover"
+            src="/serverfeature.png"
+            alt="Comet server hosting — create a Paper server and friends join from Minecraft multiplayer"
+            width="2424"
+            height="1664"
+            class="mod-showcase__img"
             loading="lazy"
           />
-          <div class="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#08090d] via-transparent to-pink-500/10" />
-          <div class="absolute bottom-4 left-4 rounded border border-white/10 bg-black/60 px-3 py-2 backdrop-blur-sm">
-            <p class="font-mono text-[9px] uppercase tracking-widest text-white/40">Shaders</p>
-            <p class="font-pixel text-sm text-emerald-300">Iris · enabled</p>
+          <div class="mod-showcase__overlay" aria-hidden="true">
+            {serverTypes.map((type) => (
+              <span class="mod-showcase__badge font-pixel">{type}</span>
+            ))}
+            <span class="mod-showcase__badge font-pixel mod-showcase__badge--accent">Public · Private</span>
           </div>
-          <div class="absolute bottom-4 right-4 rounded border border-white/10 bg-black/60 px-3 py-2 backdrop-blur-sm">
-            <p class="font-mono text-[9px] uppercase tracking-widest text-white/40">FPS</p>
-            <p class="font-pixel text-sm text-pink-200">144 avg</p>
-          </div>
-        </div>
+        </figure>
       </div>
 
       <div class="order-1 lg:order-2">
-        <p class="font-pixel mb-3 text-[10px] uppercase tracking-[0.25em] text-white/35">In-game</p>
+        <p class="font-pixel mb-3 text-[10px] uppercase tracking-[0.25em] text-white/35">Built-in hosting</p>
         <h2 class="font-pixel mb-6 text-3xl leading-tight text-white sm:text-4xl">
-          Worlds that <span class="text-gradient-ocean">breathe</span> again
+          Your server, <span class="text-gradient-ocean">out the box</span>
         </h2>
         <p class="mb-8 text-base leading-relaxed text-white/50">
-          Birch forests, mountain vistas, and swamp biomes — the concept art you grew up on,
-          rendered at the frame rate you deserve.
+          Create a Paper, Folia, Leaf, or Purpur world without installing Java or juggling
+          third-party software. Comet runs it on your machine — tuned to your RAM — and your
+          friends connect like any other multiplayer server.
         </p>
 
         <ul class="space-y-4">
-          {[
-            "Iris shader pipeline with sensible defaults",
-            "Dynamic lighting without the stutter",
-            "Chunk loading tuned for exploration",
-          ].map((item) => (
+          {highlights.map((item) => (
             <li class="flex items-start gap-3 text-sm text-white/60">
               <span class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center border border-emerald-500/30 bg-emerald-500/10 text-[10px] text-emerald-300">✓</span>
               {item}
@@ -49,9 +58,6 @@
           ))}
         </ul>
 
-        <button type="button" class="btn-pixel btn-pixel--blue mt-10 inline-flex" data-download-sheet-open>
-          Join closed beta
-        </button>
       </div>
     </div>
   </div>

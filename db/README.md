@@ -25,3 +25,5 @@ Run the SQL in `migrations/` against your production database when deploying CMS
 | `news_posts` | News/blog articles (markdown body) |
 | `staff_members` | Public team page entries |
 | `staff_sessions` | Admin login sessions |
+| `launcher_announcements` | In-launcher announcement banners |
+| `launcher_versions` | Published launcher builds |

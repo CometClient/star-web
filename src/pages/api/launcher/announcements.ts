@@ -1,9 +1,9 @@
 import type { APIRoute } from "astro";
-import { getLauncherAnnouncements } from "@/lib/api";
+import { listLauncherAnnouncements } from "@/lib/db";
 
 export const GET: APIRoute = async () => {
   try {
-    const announcements = await getLauncherAnnouncements();
+    const announcements = listLauncherAnnouncements(true);
     return new Response(JSON.stringify(announcements), {
       status: 200,
       headers: {

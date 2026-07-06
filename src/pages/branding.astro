@@ -1,0 +1,64 @@
+---
+import SiteLayout from "../layouts/SiteLayout.astro";
+import Header from "../components/site/Header.astro";
+import FloatingFooter from "../components/site/FloatingFooter.astro";
+---
+
+<SiteLayout title="Branding — Comet Client" description="Comet Client Branding.">
+  <Header />
+  <main class="flex min-h-screen flex-col">
+    <div class="hero-concept hero-concept--short relative h-64 sm:h-72">
+      <div class="hero-concept__bg" aria-hidden="true"></div>
+      <div class="relative z-[1] flex h-full items-end">
+        <div class="mx-auto w-full max-w-3xl px-4 pb-10 sm:px-6">
+          <p class="font-pixel text-[10px] tracking-[0.2em] text-white/40">Branding</p>
+          <h1 class="font-pixel mt-2 text-4xl text-gradient-gold sm:text-5xl">Branding Guidelines</h1>
+        </div>
+      </div>
+    </div>
+
+    <article class="page-body legal-prose mx-auto max-w-3xl flex-1 px-4 py-14 sm:px-6">
+      <p>Last updated: July 6, 2026. These are the branding guidelines for Comet Client. We reserve the right to update these guidelines at any time without notifying you.</p>
+
+      <h2>1. Logo</h2>
+      <p>
+        The Comet Client logo is the primary brand identifier. We use a custom designed logo made by our own artist. We reserve the right to send DMCA notices to any user who uses the logo without permission. If you are interested in using the logo, please contact us at <a href="mailto:pr@cometclient.dev">pr@cometclient.dev</a>.
+      </p>
+
+      <h2>2. Watermark Assets</h2>
+      <p>
+       Our assets will always contain a watermark somewhere within the image. This is to mainly prevent any unauthorized use of our assets and/or misuse. We will never provide a watermark-free version of our assets.
+      </p>
+
+      <h2>3. Font Choices</h2>
+      <p>
+       We utilize the font "MultiTypePixel" for most parts of our website. The font is free to use, and free to download. You can download the font straight from our site by clicking <a href="/fonts/MultiTypePixel-Display.otf">here</a>.
+       <br />
+       <span> </span>
+       <br />
+       We also utilize a secondary font named "Fastelar" for our site. This is seen less throughout the site, but is still used in some areas. A direct link for this font cannot be shared due to licensing restrictions. You are more than welcome to download it from the internet.
+      </p>
+
+    </article>
+
+    <FloatingFooter />
+  </main>
+</SiteLayout>
+
+<style>
+  .legal-prose :global(h2) {
+    font-family: 'MultiTypePixel', 'Inter', sans-serif;
+    font-size: 1.125rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: hsl(0 0% 100% / 0.9);
+    margin-top: 2rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .legal-prose :global(p) {
+    color: hsl(0 0% 100% / 0.55);
+    line-height: 1.7;
+    margin-bottom: 1rem;
+  }
+</style>
