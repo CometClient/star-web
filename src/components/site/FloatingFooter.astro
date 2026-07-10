@@ -24,13 +24,24 @@ const links = [
       </p>
     </div>
 
-    <nav class="site-footer__nav" aria-label="Footer">
-      {links.map((link) => (
-        <a href={link.href} class="site-footer__link">{link.label}</a>
-      ))}
-      <button type="button" class="site-footer__link site-footer__link--button" data-download-sheet-open>
-        Beta Access
-      </button>
+    <nav class="site-footer__nav flex flex-col items-end" aria-label="Footer">
+      <div class="flex items-center gap-x-6">
+        {links.map((link) => (
+          <a href={link.href} class="site-footer__link">{link.label}</a>
+        ))}
+        <button type="button" class="site-footer__link site-footer__link--button" data-download-sheet-open>
+          Beta Access
+        </button>
+      </div>
+      <a href="https://www.thegreenwebfoundation.org/green-web-check/?url=cometclient.dev" target="_blank" rel="noopener noreferrer" class="mt-6 block">
+        <img
+          src="https://app.greenweb.org/api/v3/greencheckimage/cometclient.dev?nocache=true"
+          alt="This website runs on green hosting - verified by thegreenwebfoundation.org"
+          width="140"
+          height="67"
+          class="opacity-50 transition hover:opacity-90"
+        />
+      </a>
     </nav>
 
     <div class="site-footer__legal">
