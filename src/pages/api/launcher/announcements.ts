@@ -3,7 +3,7 @@ import { listLauncherAnnouncements } from "@/lib/db";
 
 export const GET: APIRoute = async () => {
   try {
-    const announcements = listLauncherAnnouncements(true);
+    const announcements = await listLauncherAnnouncements(true);
     return new Response(JSON.stringify(announcements), {
       status: 200,
       headers: {

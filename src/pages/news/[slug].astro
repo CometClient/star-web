@@ -7,7 +7,7 @@ import { renderNewsMarkdown } from "../../lib/markdown";
 import NewsAuthorMeta from "../../components/news/NewsAuthorMeta.astro";
 
 const { slug } = Astro.params;
-const post = slug ? getNewsBySlug(slug) : undefined;
+const post = slug ? await getNewsBySlug(slug) : undefined;
 
 if (!post || !post.published) {
   return Astro.redirect("/news");

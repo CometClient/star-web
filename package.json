@@ -15,9 +15,14 @@
     "build:worker": "astro build && echo 'Worker ready - run: npx wrangler deploy'",
     "deploy": "astro build && npx wrangler deploy",
     "db:migrate": "node db/migrate.mjs",
-    "db:seed": "node db/migrate.mjs --seed"
+    "db:seed": "node db/migrate.mjs --seed",
+    "db:worker:dev": "pnpm --dir workers/db dev",
+    "db:worker:deploy": "pnpm --dir workers/db deploy",
+    "db:d1:migrate:remote": "pnpm --dir workers/db d1:migrate:remote",
+    "db:d1:seed:remote": "pnpm --dir workers/db d1:seed:remote"
   },
   "dependencies": {
+    "@astrojs/cloudflare": "^13.7.0",
     "@astrojs/react": "^4.4.2",
     "@cloudflare/kv-asset-handler": "^0.5.0",
     "@hookform/resolvers": "^3.10.0",
@@ -87,6 +92,6 @@
     "postcss": "^8.5.6",
     "tailwindcss": "^3.4.17",
     "typescript": "^5.8.3",
-    "wrangler": "^4.93.1"
+    "wrangler": "^4.114.0"
   }
 }

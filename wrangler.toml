@@ -1,13 +1,16 @@
 name = "comet-web-cf-worker-testing"
-main = "worker.js"
-
-site = { bucket = "./dist" }
-
 compatibility_date = "2026-05-21"
-#env
+compatibility_flags = [ "nodejs_compat" ]
+
+# Service binding: lets this worker call comet-db directly over CF's internal
+# network, bypassing the *.workers.dev → *.workers.dev HTTP loopback block.
+[[services]]
+binding = "DB_WORKER"
+service = "comet-db"
+
 [vars]
-#DB_HOST = "@db_host"
-#DB_USER = "@db_user"
-#DB_PASSWORD = "@db_password"
-#DB_NAME = "@db_name"
-API_URL = "https://comet-db-proxy.mrrpmeowfurry.dev"
+DB_API_URL = "https://comet-db.cold-mc.workers.dev"
+PUBLIC_DB_API_URL = "https://comet-db.cold-mc.workers.dev"
+
+[assets]
+directory = "./dist/client"

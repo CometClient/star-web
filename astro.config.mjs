@@ -1,7 +1,7 @@
 // @ts-check
 import { defineConfig } from "astro/config";
 import react from "@astrojs/react";
-import node from "@astrojs/node";
+import cloudflare from "@astrojs/cloudflare";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -9,7 +9,9 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
   output: "server",
-  adapter: node({ mode: "standalone" }),
+  adapter: cloudflare({
+    imageService: "compile",
+  }),
   integrations: [react()],
   vite: {
     resolve: {
@@ -18,20 +20,9 @@ export default defineConfig({
       },
       dedupe: ["react", "react-dom", "react/jsx-runtime", "react/jsx-dev-runtime"],
     },
-    optimizeDeps: {
-      include: [
-        "react",
-        "react-dom",
-        "react-dom/client",
-        "react/jsx-runtime",
-        "react/jsx-dev-runtime",
-      ],
-      esbuildOptions: {
-        jsx: "automatic",
-      },
-    },
     ssr: {
       noExternal: ["react-markdown", "remark-gfm"],
+      external: ["better-sqlite3"],
     },
   },
 });

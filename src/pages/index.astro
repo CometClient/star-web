@@ -10,7 +10,7 @@ import FloatingFooter from "../components/site/FloatingFooter.astro";
 import { listNews } from "../lib/db";
 import NewsCard from "../components/news/NewsCard.astro";
 
-const latestNews = listNews(true).slice(0, 3);
+const latestNews = (await listNews(true)).slice(0, 3);
 ---
 
 <SiteLayout>

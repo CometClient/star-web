@@ -1,202 +1,19 @@
-import Database from "better-sqlite3";
-import { existsSync, mkdirSync } from "node:fs";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
-import { readFileSync, readdirSync } from "node:fs";
-import { STAFF_TIER_DEFAULT, STAFF_TIER_ORDER_SQL } from "@/lib/staff-tiers";
+export type {
+  LauncherAnnouncement,
+  LauncherVersion,
+  NewsPost,
+  StaffMember,
+} from "@/lib/db-types";
 
-const root = join(dirname(fileURLToPath(import.meta.url)), "../..");
-const dataDir = join(root, "db/data");
-const dbPath = process.env.DATABASE_PATH || join(dataDir, "comet.db");
-
-let db: Database.Database | null = null;
-
-function runMigrations(database: Database.Database) {
-  const migrationsDir = join(root, "db/migrations");
-  if (!existsSync(migrationsDir)) return;
-
-  database.exec(`
-    CREATE TABLE IF NOT EXISTS _migrations (
-      name TEXT PRIMARY KEY,
-      applied_at TEXT NOT NULL DEFAULT (datetime('now'))
-    )
-  `);
-
-  const files = readdirSync(migrationsDir).filter((f) => f.endsWith(".sql")).sort();
-  for (const file of files) {
-    const applied = database.prepare("SELECT 1 FROM _migrations WHERE name = ?").get(file);
-    if (applied) continue;
-    database.exec(readFileSync(join(migrationsDir, file), "utf8"));
-    database.prepare("INSERT INTO _migrations (name) VALUES (?)").run(file);
-  }
-}
-
-export function getDb(): Database.Database {
-  if (db) return db;
-  if (!existsSync(dataDir)) mkdirSync(dataDir, { recursive: true });
-  db = new Database(dbPath);
-  db.pragma("journal_mode = WAL");
-  db.pragma("foreign_keys = ON");
-  runMigrations(db);
-  return db;
-}
-
-export interface NewsPost {
-  id: string;
-  slug: string;
-  title: string;
-  excerpt: string | null;
-  body_md: string;
-  cover_url: string | null;
-  published: number;
-  published_at: string | null;
-  author: string | null;
-  mc_author_username: string | null;
-  pinned: number;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface StaffMember {
-  id: string;
-  display_name: string;
-  mc_username: string | null;
-  mc_uuid: string | null;
-  role: string;
-  role_tier: string;
-  bio: string | null;
-  avatar_url: string | null;
-  sort_order: number;
-  published: number;
-  created_at: string;
-  updated_at: string;
-}
-
-export function listNews(publishedOnly = true): NewsPost[] {
-  const sql = publishedOnly
-    ? `SELECT * FROM news_posts WHERE published = 1 ORDER BY pinned DESC, published_at DESC`
-    : `SELECT * FROM news_posts ORDER BY pinned DESC, updated_at DESC`;
-  return getDb().prepare(sql).all() as NewsPost[];
-}
-
-export function getNewsBySlug(slug: string): NewsPost | undefined {
-  return getDb().prepare(`SELECT * FROM news_posts WHERE slug = ?`).get(slug) as NewsPost | undefined;
-}
-
-export function getNewsById(id: string): NewsPost | undefined {
-  return getDb().prepare(`SELECT * FROM news_posts WHERE id = ?`).get(id) as NewsPost | undefined;
-}
-
-export function upsertNews(post: Partial<NewsPost> & { id: string; slug: string; title: string }) {
-  const now = new Date().toISOString();
-  const existing = getNewsById(post.id);
-  if (existing) {
-    getDb()
-      .prepare(
-        `UPDATE news_posts SET slug=?, title=?, excerpt=?, body_md=?, cover_url=?, published=?, published_at=?, author=?, mc_author_username=?, pinned=?, updated_at=? WHERE id=?`,
-      )
-      .run(
-        post.slug,
-        post.title,
-        post.excerpt ?? null,
-        post.body_md ?? "",
-        post.cover_url ?? null,
-        post.published ?? 0,
-        post.published_at ?? null,
-        post.author ?? null,
-        post.mc_author_username ?? null,
-        post.pinned ?? 0,
-        now,
-        post.id,
-      );
-  } else {
-    getDb()
-      .prepare(
-        `INSERT INTO news_posts (id, slug, title, excerpt, body_md, cover_url, published, published_at, author, mc_author_username, pinned, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      )
-      .run(
-        post.id,
-        post.slug,
-        post.title,
-        post.excerpt ?? null,
-        post.body_md ?? "",
-        post.cover_url ?? null,
-        post.published ?? 0,
-        post.published_at ?? null,
-        post.author ?? null,
-        post.mc_author_username ?? null,
-        post.pinned ?? 0,
-        now,
-        now,
-      );
-  }
-  return getNewsById(post.id)!;
-}
-
-export function deleteNews(id: string) {
-  getDb().prepare(`DELETE FROM news_posts WHERE id = ?`).run(id);
-}
-
-export function listStaff(publishedOnly = true): StaffMember[] {
-  const sql = publishedOnly
-    ? `SELECT * FROM staff_members WHERE published = 1 ORDER BY ${STAFF_TIER_ORDER_SQL}, sort_order`
-    : `SELECT * FROM staff_members ORDER BY ${STAFF_TIER_ORDER_SQL}, sort_order`;
-  return getDb().prepare(sql).all() as StaffMember[];
-}
-
-export function getStaffById(id: string): StaffMember | undefined {
-  return getDb().prepare(`SELECT * FROM staff_members WHERE id = ?`).get(id) as StaffMember | undefined;
-}
-
-export function upsertStaff(member: Partial<StaffMember> & { id: string; display_name: string; role: string }) {
-  const now = new Date().toISOString();
-  const existing = getStaffById(member.id);
-  if (existing) {
-    getDb()
-      .prepare(
-        `UPDATE staff_members SET display_name=?, mc_username=?, mc_uuid=?, role=?, role_tier=?, bio=?, avatar_url=?, sort_order=?, published=?, updated_at=? WHERE id=?`,
-      )
-      .run(
-        member.display_name,
-        member.mc_username ?? null,
-        member.mc_uuid ?? null,
-        member.role,
-        member.role_tier ?? STAFF_TIER_DEFAULT,
-        member.bio ?? null,
-        member.avatar_url ?? null,
-        member.sort_order ?? 0,
-        member.published ?? 1,
-        now,
-        member.id,
-      );
-  } else {
-    getDb()
-      .prepare(
-        `INSERT INTO staff_members (id, display_name, mc_username, mc_uuid, role, role_tier, bio, avatar_url, sort_order, published, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      )
-      .run(
-        member.id,
-        member.display_name,
-        member.mc_username ?? null,
-        member.mc_uuid ?? null,
-        member.role,
-        member.role_tier ?? STAFF_TIER_DEFAULT,
-        member.bio ?? null,
-        member.avatar_url ?? null,
-        member.sort_order ?? 0,
-        member.published ?? 1,
-        now,
-        now,
-      );
-  }
-  return getStaffById(member.id)!;
-}
-
-export function deleteStaff(id: string) {
-  getDb().prepare(`DELETE FROM staff_members WHERE id = ?`).run(id);
-}
+import { useRemoteDb } from "@/lib/db-config";
+import type {
+  LauncherAnnouncement,
+  LauncherVersion,
+  NewsPost,
+  StaffMember,
+} from "@/lib/db-types";
+import * as local from "@/lib/db-local";
+import * as remote from "@/lib/db-remote";
 
 export function mcRender(username: string | null | undefined) {
   if (username) return `https://render.crafty.gg/3d/full/${encodeURIComponent(username)}?x=-30&z=50`;
@@ -208,40 +25,88 @@ export function mcBust(username: string | null | undefined) {
   return `https://render.crafty.gg/3d/bust/Steve`;
 }
 
-export interface LauncherAnnouncement {
-  id: number;
-  announcement: string;
-  redirect_url: string | null;
-  is_active: number;
-  published_at: string;
+export async function listNews(publishedOnly = true): Promise<NewsPost[]> {
+  if (useRemoteDb()) return remote.listNewsRemote(publishedOnly);
+  return local.listNewsLocal(publishedOnly);
 }
 
-export interface LauncherVersion {
-  id: string;
-  version: string;
-  channel: string;
-  download_url: string | null;
-  notes: string | null;
-  published: number;
-  published_at: string | null;
+export async function getNewsBySlug(slug: string): Promise<NewsPost | undefined> {
+  if (useRemoteDb()) return remote.getNewsBySlugRemote(slug);
+  return local.getNewsBySlugLocal(slug);
 }
 
-export function listLauncherAnnouncements(activeOnly = true): LauncherAnnouncement[] {
-  const sql = activeOnly
-    ? `SELECT * FROM launcher_announcements WHERE is_active = 1 ORDER BY published_at DESC`
-    : `SELECT * FROM launcher_announcements ORDER BY published_at DESC`;
-  return getDb().prepare(sql).all() as LauncherAnnouncement[];
+export async function getNewsById(id: string): Promise<NewsPost | undefined> {
+  if (useRemoteDb()) {
+    const all = await remote.listNewsRemote(false);
+    return all.find((p) => p.id === id);
+  }
+  return local.getNewsByIdLocal(id);
 }
 
-export function listLauncherVersions(publishedOnly = true): LauncherVersion[] {
-  const sql = publishedOnly
-    ? `SELECT * FROM launcher_versions WHERE published = 1 ORDER BY published_at DESC`
-    : `SELECT * FROM launcher_versions ORDER BY published_at DESC`;
-  return getDb().prepare(sql).all() as LauncherVersion[];
+export async function upsertNews(
+  post: Partial<NewsPost> & { id: string; slug: string; title: string },
+): Promise<NewsPost> {
+  if (useRemoteDb()) return remote.upsertNewsRemote(post);
+  return local.upsertNewsLocal(post);
 }
 
-export function getLatestLauncherVersion(): LauncherVersion | undefined {
-  return getDb()
-    .prepare(`SELECT * FROM launcher_versions WHERE published = 1 ORDER BY published_at DESC LIMIT 1`)
-    .get() as LauncherVersion | undefined;
+export async function deleteNews(id: string, slug?: string): Promise<void> {
+  if (useRemoteDb()) {
+    const s = slug ?? (await getNewsById(id))?.slug;
+    if (s) await remote.deleteNewsRemote(id, s);
+    return;
+  }
+  local.deleteNewsLocal(id);
+}
+
+export async function listStaff(publishedOnly = true): Promise<StaffMember[]> {
+  if (useRemoteDb()) return remote.listStaffRemote(publishedOnly);
+  return local.listStaffLocal(publishedOnly);
+}
+
+export async function getStaffById(id: string): Promise<StaffMember | undefined> {
+  if (useRemoteDb()) return remote.getStaffByIdRemote(id);
+  return local.getStaffByIdLocal(id);
+}
+
+export async function upsertStaff(
+  member: Partial<StaffMember> & { id: string; display_name: string; role: string },
+): Promise<StaffMember> {
+  if (useRemoteDb()) return remote.upsertStaffRemote(member);
+  return local.upsertStaffLocal(member);
+}
+
+export async function deleteStaff(id: string): Promise<void> {
+  if (useRemoteDb()) return remote.deleteStaffRemote(id);
+  local.deleteStaffLocal(id);
+}
+
+export async function listLauncherAnnouncements(activeOnly = true): Promise<LauncherAnnouncement[]> {
+  if (useRemoteDb()) return remote.listLauncherAnnouncementsRemote(activeOnly);
+  return local.listLauncherAnnouncementsLocal(activeOnly);
+}
+
+export async function listLauncherVersions(publishedOnly = true): Promise<LauncherVersion[]> {
+  if (useRemoteDb()) return remote.listLauncherVersionsRemote(publishedOnly);
+  return local.listLauncherVersionsLocal(publishedOnly);
+}
+
+export async function getLatestLauncherVersion(): Promise<LauncherVersion | undefined> {
+  if (useRemoteDb()) return remote.getLatestLauncherVersionRemote();
+  return local.getLatestLauncherVersionLocal();
+}
+
+export async function persistSession(tokenHash: string, expiresAt: string): Promise<void> {
+  if (useRemoteDb()) return remote.createSessionRemote(tokenHash, expiresAt);
+  local.createSessionLocal(tokenHash, expiresAt);
+}
+
+export async function checkSession(tokenHash: string): Promise<boolean> {
+  if (useRemoteDb()) return remote.validateSessionRemote(tokenHash);
+  return local.validateSessionLocal(tokenHash);
+}
+
+export async function revokeSession(tokenHash: string): Promise<void> {
+  if (useRemoteDb()) return remote.destroySessionRemote(tokenHash);
+  local.destroySessionLocal(tokenHash);
 }

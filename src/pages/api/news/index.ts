@@ -5,18 +5,18 @@ import { randomUUID } from "node:crypto";
 
 export const GET: APIRoute = async ({ url }) => {
   const all = url.searchParams.get("all") === "1";
-  const posts = listNews(!all);
+  const posts = await listNews(!all);
   return Response.json(posts);
 };
 
 export const POST: APIRoute = async (context) => {
-  const denied = requireStaff(context);
+  const denied = await requireStaff(context);
   if (denied) return denied;
 
   const body = await context.request.json();
   const id = body.id || randomUUID();
   const slug = body.slug || body.title?.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || id;
-  const post = upsertNews({
+  const post = await upsertNews({
     id,
     slug,
     title: body.title,

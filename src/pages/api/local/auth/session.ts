@@ -3,5 +3,5 @@ import { getSessionToken, validateSession } from "@/lib/auth";
 
 export const GET: APIRoute = async (context) => {
   const token = getSessionToken(context);
-  return Response.json({ authenticated: validateSession(token) });
+  return Response.json({ authenticated: await validateSession(token) });
 };

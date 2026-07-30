@@ -1,10 +1,10 @@
 import type { APIRoute } from "astro";
-import { getNewsBySlug, upsertNews, deleteNews, getNewsById } from "@/lib/db";
+import { getNewsBySlug, upsertNews, deleteNews } from "@/lib/db";
 import { requireStaff } from "@/lib/auth";
 
 export const GET: APIRoute = async ({ params }) => {
   const slug = params.slug!;
-  const post = getNewsBySlug(slug);
+  const post = await getNewsBySlug(slug);
   if (!post || !post.published) {
     return new Response(JSON.stringify({ error: "Not found" }), { status: 404 });
   }
@@ -12,16 +12,16 @@ export const GET: APIRoute = async ({ params }) => {
 };
 
 export const PUT: APIRoute = async (context) => {
-  const denied = requireStaff(context);
+  const denied = await requireStaff(context);
   if (denied) return denied;
 
   const slug = context.params.slug!;
-  const existing = getNewsBySlug(slug);
+  const existing = await getNewsBySlug(slug);
   const body = await context.request.json();
   const id = body.id || existing?.id;
   if (!id) return new Response(JSON.stringify({ error: "Not found" }), { status: 404 });
 
-  const post = upsertNews({
+  const post = await upsertNews({
     id,
     slug: body.slug || slug,
     title: body.title,
@@ -38,12 +38,12 @@ export const PUT: APIRoute = async (context) => {
 };
 
 export const DELETE: APIRoute = async (context) => {
-  const denied = requireStaff(context);
+  const denied = await requireStaff(context);
   if (denied) return denied;
 
   const slug = context.params.slug!;
-  const existing = getNewsBySlug(slug);
+  const existing = await getNewsBySlug(slug);
   if (!existing) return new Response(JSON.stringify({ error: "Not found" }), { status: 404 });
-  deleteNews(existing.id);
+  await deleteNews(existing.id, slug);
   return new Response(null, { status: 204 });
 };

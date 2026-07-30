@@ -5,7 +5,7 @@ import FloatingFooter from "../components/site/FloatingFooter.astro";
 import { listStaff } from "../lib/db";
 import { craftyFullBody } from "../lib/crafty";
 
-const staff = listStaff(true);
+const staff = await listStaff(true);
 
 const tiers = [
   { key: "owner", label: "Owner" },

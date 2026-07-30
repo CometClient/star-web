@@ -5,7 +5,7 @@ import FloatingFooter from "../../components/site/FloatingFooter.astro";
 import { listNews } from "../../lib/db";
 import NewsCard from "../../components/news/NewsCard.astro";
 
-const posts = listNews(true);
+const posts = await listNews(true);
 const pinned = posts.filter((p) => p.pinned);
 const regular = posts.filter((p) => !p.pinned);
 ---

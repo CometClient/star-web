@@ -10,7 +10,7 @@ export const POST: APIRoute = async (context) => {
       headers: { "Content-Type": "application/json" },
     });
   }
-  const token = createSession();
+  const token = await createSession();
   setSessionCookie(context, token);
   return Response.json({ ok: true });
 };

@@ -1,0 +1,16 @@
+name = "comet-db"
+main = "src/index.ts"
+compatibility_date = "2026-05-21"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "comet-cms"
+database_id = "77a3d3c9-78f7-4840-9bd3-08d9d6639c65"
+
+[vars]
+ALLOWED_ORIGINS = "*"
+
+# Set secrets after deploy:
+# wrangler secret put DB_API_SECRET
+# wrangler secret put STAFF_EMAIL
+# wrangler secret put STAFF_PASSWORD

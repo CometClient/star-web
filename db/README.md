@@ -16,7 +16,17 @@ pnpm seed
 
 ## Deploying to production
 
-Run the SQL in `migrations/` against your production database when deploying CMS schema updates. This folder is a standalone sub-repo so DB changes can ship independently of the site.
+**Cloudflare D1 (recommended):** use the DB worker in `../workers/db/`. From repo root:
+
+```bash
+pnpm db:worker:deploy
+pnpm db:d1:migrate:remote
+pnpm db:d1:seed:remote
+```
+
+Set `DB_API_URL` and `DB_API_SECRET` on the frontend host — see root `README.md`.
+
+**Manual:** run SQL in `migrations/` against your production SQLite/D1 when schema changes.
 
 ## Tables
 

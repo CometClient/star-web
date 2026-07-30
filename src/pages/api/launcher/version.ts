@@ -6,7 +6,7 @@ export const GET: APIRoute = async ({ url }) => {
     const all = url.searchParams.get("all");
 
     if (all === "1" || all === "true") {
-      const versions = listLauncherVersions(true);
+      const versions = await listLauncherVersions(true);
       return new Response(JSON.stringify(versions), {
         status: 200,
         headers: {
@@ -16,7 +16,7 @@ export const GET: APIRoute = async ({ url }) => {
       });
     }
 
-    const latest = getLatestLauncherVersion();
+    const latest = await getLatestLauncherVersion();
     if (!latest) {
       return new Response(JSON.stringify({ error: "No published version" }), {
         status: 404,

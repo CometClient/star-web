@@ -1,0 +1,20 @@
+{
+  "name": "@comet/db-worker",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "d1:create": "wrangler d1 create comet-cms",
+    "d1:migrate:local": "wrangler d1 migrations apply comet-cms --local",
+    "d1:migrate:remote": "wrangler d1 migrations apply comet-cms --remote",
+    "d1:seed:local": "wrangler d1 execute comet-cms --local --file=../../db/seed.sql",
+    "d1:seed:remote": "wrangler d1 execute comet-cms --remote --file=../../db/seed.sql"
+  },
+  "devDependencies": {
+    "wrangler": "^4.93.1",
+    "@cloudflare/workers-types": "^4.20250525.0",
+    "typescript": "^5.8.3"
+  }
+}
