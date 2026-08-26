@@ -2,6 +2,10 @@ export type {
   LauncherAnnouncement,
   LauncherVersion,
   NewsPost,
+  OnlineCount,
+  OnlineList,
+  OnlinePlayer,
+  PingResult,
   StaffMember,
 } from "@/lib/db-types";
 
@@ -10,6 +14,9 @@ import type {
   LauncherAnnouncement,
   LauncherVersion,
   NewsPost,
+  OnlineCount,
+  OnlineList,
+  PingResult,
   StaffMember,
 } from "@/lib/db-types";
 import * as local from "@/lib/db-local";
@@ -109,4 +116,24 @@ export async function checkSession(tokenHash: string): Promise<boolean> {
 export async function revokeSession(tokenHash: string): Promise<void> {
   if (useRemoteDb()) return remote.destroySessionRemote(tokenHash);
   local.destroySessionLocal(tokenHash);
+}
+
+/** Record a launcher heartbeat and return the resolved player. */
+export async function pingPresence(payload: {
+  uuid: string;
+  username?: string | null;
+  launcher_version?: string | null;
+}): Promise<PingResult> {
+  if (useRemoteDb()) return remote.pingPresenceRemote(payload);
+  return local.pingPresenceLocal(payload);
+}
+
+export async function listOnline(): Promise<OnlineList> {
+  if (useRemoteDb()) return remote.listOnlineRemote();
+  return local.listOnlineLocal();
+}
+
+export async function countOnline(): Promise<OnlineCount> {
+  if (useRemoteDb()) return remote.countOnlineRemote();
+  return local.countOnlineLocal();
 }

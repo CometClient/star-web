@@ -21,18 +21,108 @@
     <img src="/comet-logo.png" alt="" width="48" height="48" />
   </div>
 
-  <p class="font-pixel text-[10px] tracking-[0.22em] text-pink-200/80">Closed beta</p>
-  <h2 class="font-pixel mt-2 text-xl text-white sm:text-2xl">Comet isn't public yet</h2>
+  {/* Step 1 — no token yet */}
+  <div data-beta-step="intro">
+    <p class="font-pixel text-[10px] tracking-[0.22em] text-pink-200/80">Closed beta</p>
+    <h2 class="font-pixel mt-2 text-xl text-white sm:text-2xl">Comet isn't public yet</h2>
 
-  <p class="beta-modal__body">
-    We're inviting testers in waves through Discord. Grab an invite token there — public downloads open once we hit stability targets.
-  </p>
+    <p class="beta-modal__body">
+      We're inviting testers in waves through Discord. Grab an invite token there — public downloads open once we hit stability targets.
+    </p>
 
-  <a href="#" class="btn-pixel btn-pixel--pink beta-modal__cta">
-    Get beta access on Discord
-  </a>
+    <a href="#" class="btn-pixel btn-pixel--pink beta-modal__cta">
+      Get beta access on Discord
+    </a>
 
-  <p class="beta-modal__hint font-mono text-[10px] uppercase tracking-widest text-white/28">
-    No public builds · Invite only
-  </p>
+    <button type="button" class="beta-modal__switch" data-beta-goto="token">
+      I already have a token
+    </button>
+
+    <p class="beta-modal__hint font-mono text-[10px] uppercase tracking-widest text-white/28">
+      No public builds · Invite only
+    </p>
+  </div>
+
+  {/* Step 2 — enter the token */}
+  <div data-beta-step="token" hidden>
+    <p class="font-pixel text-[10px] tracking-[0.22em] text-pink-200/80">Step 1 of 2</p>
+    <h2 class="font-pixel mt-2 text-xl text-white sm:text-2xl">Enter your token</h2>
+
+    <p class="beta-modal__body">
+      Tokens are personal and work once. Don't share yours.
+    </p>
+
+    <form data-beta-form>
+      <input
+        type="text"
+        class="beta-field"
+        name="token"
+        placeholder="cmt_…"
+        autocomplete="off"
+        spellcheck="false"
+        required
+        data-beta-input
+      />
+      <p class="beta-modal__error" data-beta-error hidden></p>
+      <button type="submit" class="btn-pixel btn-pixel--pink beta-modal__cta mt-3" data-beta-submit>
+        Verify token
+      </button>
+    </form>
+
+    <button type="button" class="beta-modal__switch" data-beta-goto="intro">
+      I don't have a token
+    </button>
+  </div>
+
+  {/* Step 3 — confirm the identity we have on file */}
+  <div data-beta-step="confirm" hidden>
+    <p class="font-pixel text-[10px] tracking-[0.22em] text-pink-200/80">Step 2 of 2</p>
+    <h2 class="font-pixel mt-2 text-xl text-white sm:text-2xl">Is this you?</h2>
+
+    <div class="beta-skin">
+      <img src="" alt="" data-beta-render width="120" height="200" />
+      <div>
+        <p class="font-pixel text-base text-white" data-beta-name></p>
+        <p class="beta-skin__uuid font-mono" data-beta-uuid></p>
+      </div>
+    </div>
+
+    <dl class="beta-build" data-beta-build hidden>
+      <div><dt>Build</dt><dd data-beta-build-version></dd></div>
+      <div><dt>Platform</dt><dd data-beta-build-platform></dd></div>
+      <div><dt>Size</dt><dd data-beta-build-size></dd></div>
+    </dl>
+
+    <p class="beta-modal__body">
+      Confirming spends your token and creates a one-time download link.
+    </p>
+
+    <p class="beta-modal__error" data-beta-confirm-error hidden></p>
+
+    <button type="button" class="btn-pixel btn-pixel--pink beta-modal__cta" data-beta-confirm>
+      That's me — get my download
+    </button>
+
+    <button type="button" class="beta-modal__switch" data-beta-goto="token">
+      Not me, try another token
+    </button>
+  </div>
+
+  {/* Step 4 — the single-use link */}
+  <div data-beta-step="done" hidden>
+    <p class="font-pixel text-[10px] tracking-[0.22em] text-pink-200/80">Token spent</p>
+    <h2 class="font-pixel mt-2 text-xl text-white sm:text-2xl">Your download</h2>
+
+    <p class="beta-modal__body" data-beta-filename></p>
+
+    <a href="#" class="btn-pixel btn-pixel--pink beta-modal__cta" data-beta-download>
+      Download
+    </a>
+
+    <p class="beta-modal__hint font-mono text-[10px] uppercase tracking-widest text-white/28" data-beta-countdown></p>
+
+    <p class="beta-modal__warn">
+      This link works once and your token is now used. Don't refresh after the download starts.
+    </p>
+  </div>
 </div>

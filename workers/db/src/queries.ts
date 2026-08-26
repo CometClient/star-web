@@ -2,6 +2,8 @@ import { STAFF_TIER_DEFAULT, STAFF_TIER_ORDER_SQL } from "./staff-tiers";
 
 export interface Env {
   DB: D1Database;
+  /** Beta build storage; absent until the R2 bucket is bound. */
+  BETA_BUILDS?: R2Bucket;
   DB_API_SECRET: string;
   STAFF_EMAIL?: string;
   STAFF_PASSWORD?: string;
@@ -221,4 +223,78 @@ export function slugify(title: string) {
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "");
+}
+
+export interface PresenceRow {
+  mc_uuid: string;
+  mc_username: string | null;
+  launcher_version: string | null;
+  first_seen: string;
+  last_seen: string;
+  name_checked_at: string | null;
+}
+
+export async function getPresence(db: D1Database, uuid: string) {
+  return db
+    .prepare(`SELECT * FROM launcher_presence WHERE mc_uuid = ?`)
+    .bind(uuid)
+    .first<PresenceRow>();
+}
+
+/**
+ * Record a heartbeat for one account and drop presence rows nobody has
+ * touched in a week, so the table stays proportional to the active player base.
+ */
+export async function touchPresence(
+  db: D1Database,
+  presence: {
+    mc_uuid: string;
+    mc_username: string | null;
+    launcher_version: string | null;
+    name_checked_at: string | null;
+  },
+  now: string,
+  pruneBefore: string,
+) {
+  await db.batch([
+    db
+      .prepare(
+        `INSERT INTO launcher_presence (mc_uuid, mc_username, launcher_version, first_seen, last_seen, name_checked_at)
+         VALUES (?, ?, ?, ?, ?, ?)
+         ON CONFLICT(mc_uuid) DO UPDATE SET
+           mc_username = COALESCE(excluded.mc_username, launcher_presence.mc_username),
+           launcher_version = COALESCE(excluded.launcher_version, launcher_presence.launcher_version),
+           last_seen = excluded.last_seen,
+           name_checked_at = COALESCE(excluded.name_checked_at, launcher_presence.name_checked_at)`,
+      )
+      .bind(
+        presence.mc_uuid,
+        presence.mc_username,
+        presence.launcher_version,
+        now,
+        now,
+        presence.name_checked_at,
+      ),
+    db.prepare(`DELETE FROM launcher_presence WHERE last_seen < ?`).bind(pruneBefore),
+  ]);
+  return getPresence(db, presence.mc_uuid);
+}
+
+export async function listOnlinePresence(db: D1Database, since: string) {
+  const rows = await db
+    .prepare(`SELECT * FROM launcher_presence WHERE last_seen >= ? ORDER BY last_seen DESC`)
+    .bind(since)
+    .all<PresenceRow>();
+  return rows.results ?? [];
+}
+
+export async function countOnlinePresence(db: D1Database, since: string) {
+  const row = await db
+    .prepare(
+      `SELECT COUNT(*) AS count, MAX(last_seen) AS last_ping
+         FROM launcher_presence WHERE last_seen >= ?`,
+    )
+    .bind(since)
+    .first<{ count: number; last_ping: string | null }>();
+  return { count: row?.count ?? 0, last_ping: row?.last_ping ?? null };
 }

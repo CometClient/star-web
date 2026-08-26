@@ -409,22 +409,41 @@ export async function login(email: string, password: string): Promise<AuthSessio
   return apiPost<AuthSession>("/api/auth/login", { email, password });
 }
 
-export async function verifyBetaToken(email: string, token: string): Promise<boolean> {
-  try {
-    await apiPost("/api/beta/verify", { email, token });
-    return true;
-  } catch {
-    return false;
-  }
+export interface BetaVerifyResponse {
+  ok: true;
+  token_id: string;
+  tester: {
+    id: string;
+    display_name: string;
+    mc_username: string | null;
+    mc_uuid: string | null;
+    render_url: string;
+    bust_url: string;
+    skin_url: string | null;
+  };
+  build: {
+    id: string;
+    version: string;
+    platform: string;
+    filename: string;
+    size_bytes: number;
+    sha256: string | null;
+    notes: string | null;
+  } | null;
+  link_ttl_seconds: number;
 }
 
-export async function requestBetaDownload(body: {
-  email: string;
+/** Step 1: check the token and get back the identity to confirm. Non-consuming. */
+export async function verifyBetaToken(token: string): Promise<BetaVerifyResponse> {
+  return apiPost<BetaVerifyResponse>("/api/beta/verify", { token });
+}
+
+/** Step 2: confirming burns the token and returns a single-use download link. */
+export async function confirmBetaIdentity(body: {
   token: string;
-  version: string;
-  platform: string;
-}): Promise<{ url: string; expires_in?: number }> {
-  return apiPost("/api/beta/download", body);
+  build_id?: string;
+}): Promise<{ url: string; expires_in: number; expires_at: string; build: { version: string; filename: string; size_bytes: number } }> {
+  return apiPost("/api/beta/confirm", { ...body, confirmed: true });
 }
 
 export async function createTicket(body: {

@@ -7,8 +7,19 @@ import type {
   LauncherAnnouncement,
   LauncherVersion,
   NewsPost,
+  OnlineCount,
+  OnlineList,
+  PingResult,
   StaffMember,
 } from "@/lib/db-types";
+import {
+  NAME_TTL_SECONDS,
+  PING_INTERVAL_SECONDS,
+  PRESENCE_RETENTION_SECONDS,
+  PRESENCE_WINDOW_SECONDS,
+  isoSecondsAgo,
+  resolveUsername,
+} from "@/lib/presence";
 
 function getRoot() {
   return join(dirname(fileURLToPath(import.meta.url)), "../..");
@@ -219,4 +230,107 @@ export function validateSessionLocal(tokenHash: string): boolean {
 
 export function destroySessionLocal(tokenHash: string) {
   getDb().prepare(`DELETE FROM staff_sessions WHERE token_hash = ?`).run(tokenHash);
+}
+
+interface PresenceRowLocal {
+  mc_uuid: string;
+  mc_username: string | null;
+  launcher_version: string | null;
+  first_seen: string;
+  last_seen: string;
+  name_checked_at: string | null;
+}
+
+function getPresenceLocal(uuid: string): PresenceRowLocal | undefined {
+  return getDb()
+    .prepare(`SELECT * FROM launcher_presence WHERE mc_uuid = ?`)
+    .get(uuid) as PresenceRowLocal | undefined;
+}
+
+export async function pingPresenceLocal(payload: {
+  uuid: string;
+  username?: string | null;
+  launcher_version?: string | null;
+}): Promise<PingResult> {
+  const now = new Date();
+  const nowIso = now.toISOString();
+  const existing = getPresenceLocal(payload.uuid);
+
+  const nameStale =
+    !existing?.mc_username ||
+    !existing.name_checked_at ||
+    Date.parse(existing.name_checked_at) < now.getTime() - NAME_TTL_SECONDS * 1000;
+
+  let username = existing?.mc_username ?? null;
+  let nameCheckedAt: string | null = null;
+  if (nameStale) {
+    const resolved = await resolveUsername(payload.uuid);
+    if (resolved) {
+      username = resolved;
+      nameCheckedAt = nowIso;
+    } else if (payload.username) {
+      username = payload.username;
+    }
+  }
+
+  const db = getDb();
+  db.prepare(
+    `INSERT INTO launcher_presence (mc_uuid, mc_username, launcher_version, first_seen, last_seen, name_checked_at)
+     VALUES (?, ?, ?, ?, ?, ?)
+     ON CONFLICT(mc_uuid) DO UPDATE SET
+       mc_username = COALESCE(excluded.mc_username, launcher_presence.mc_username),
+       launcher_version = COALESCE(excluded.launcher_version, launcher_presence.launcher_version),
+       last_seen = excluded.last_seen,
+       name_checked_at = COALESCE(excluded.name_checked_at, launcher_presence.name_checked_at)`,
+  ).run(payload.uuid, username, payload.launcher_version ?? null, nowIso, nowIso, nameCheckedAt);
+  db.prepare(`DELETE FROM launcher_presence WHERE last_seen < ?`).run(
+    isoSecondsAgo(PRESENCE_RETENTION_SECONDS, now),
+  );
+
+  const row = getPresenceLocal(payload.uuid);
+  return {
+    ok: true,
+    uuid: payload.uuid,
+    username: row?.mc_username ?? username,
+    first_seen: row?.first_seen ?? nowIso,
+    last_seen: row?.last_seen ?? nowIso,
+    next_ping_seconds: PING_INTERVAL_SECONDS,
+  };
+}
+
+export function listOnlineLocal(): OnlineList {
+  const now = new Date();
+  const rows = getDb()
+    .prepare(`SELECT * FROM launcher_presence WHERE last_seen >= ? ORDER BY last_seen DESC`)
+    .all(isoSecondsAgo(PRESENCE_WINDOW_SECONDS, now)) as PresenceRowLocal[];
+  return {
+    count: rows.length,
+    last_ping: rows[0]?.last_seen ?? null,
+    updated_at: now.toISOString(),
+    window_seconds: PRESENCE_WINDOW_SECONDS,
+    players: rows.map((row) => ({
+      uuid: row.mc_uuid,
+      username: row.mc_username,
+      launcher_version: row.launcher_version,
+      first_seen: row.first_seen,
+      last_seen: row.last_seen,
+      seconds_since_ping: Math.max(0, Math.round((now.getTime() - Date.parse(row.last_seen)) / 1000)),
+    })),
+  };
+}
+
+export function countOnlineLocal(): OnlineCount {
+  const now = new Date();
+  const row = getDb()
+    .prepare(
+      `SELECT COUNT(*) AS count, MAX(last_seen) AS last_ping
+         FROM launcher_presence WHERE last_seen >= ?`,
+    )
+    .get(isoSecondsAgo(PRESENCE_WINDOW_SECONDS, now)) as { count: number; last_ping: string | null };
+  return {
+    count: row?.count ?? 0,
+    last_ping: row?.last_ping ?? null,
+    updated_at: now.toISOString(),
+    window_seconds: PRESENCE_WINDOW_SECONDS,
+  };
 }

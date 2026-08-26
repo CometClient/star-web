@@ -1,55 +1,13 @@
-import { getDbApiSecret, getDbApiUrl, getDbWorkerBinding } from "@/lib/db-config";
+import { apiGet, apiMutate, resolveFetch, secretHeaders } from "@/lib/db-transport";
 import type {
   LauncherAnnouncement,
   LauncherVersion,
   NewsPost,
+  OnlineCount,
+  OnlineList,
+  PingResult,
   StaffMember,
 } from "@/lib/db-types";
-
-function baseUrl() {
-  const url = getDbApiUrl();
-  if (!url) throw new Error("DB_API_URL is not configured");
-  return url;
-}
-
-function secretHeaders(): Record<string, string> {
-  const secret = getDbApiSecret();
-  if (!secret) throw new Error("DB_API_SECRET is not configured");
-  return { "X-Comet-Secret": secret, "Content-Type": "application/json" };
-}
-
-/**
- * Resolve a fetcher: prefer the CF service binding (internal, zero-hop) so we
- * never hit the *.workers.dev → *.workers.dev HTTP loopback that CF blocks.
- * Falls back to globalThis.fetch + a real URL in local dev.
- */
-async function resolveFetch(path: string): Promise<{ fetcher: typeof fetch; url: string }> {
-  const binding = await getDbWorkerBinding();
-  if (binding) {
-    // Service binding: the URL just needs a valid origin — the binding ignores it.
-    return { fetcher: binding.fetch.bind(binding) as typeof fetch, url: `https://internal${path}` };
-  }
-  return { fetcher: fetch, url: `${baseUrl()}${path}` };
-}
-
-async function apiGet<T>(path: string): Promise<T> {
-  const { fetcher, url } = await resolveFetch(path);
-  const res = await fetcher(url);
-  if (!res.ok) throw new Error(`DB API ${path}: ${res.status}`);
-  return res.json() as Promise<T>;
-}
-
-async function apiMutate<T>(path: string, method: string, body?: unknown): Promise<T | void> {
-  const { fetcher, url } = await resolveFetch(path);
-  const res = await fetcher(url, {
-    method,
-    headers: secretHeaders(),
-    body: body !== undefined ? JSON.stringify(body) : undefined,
-  });
-  if (res.status === 204) return;
-  if (!res.ok) throw new Error(`DB API ${method} ${path}: ${res.status}`);
-  return res.json() as Promise<T>;
-}
 
 export async function listNewsRemote(publishedOnly = true): Promise<NewsPost[]> {
   return apiGet<NewsPost[]>(publishedOnly ? "/news" : "/news?all=1");
@@ -129,7 +87,8 @@ export async function createSessionRemote(tokenHash: string, expiresAt: string) 
 }
 
 export async function validateSessionRemote(tokenHash: string): Promise<boolean> {
-  const res = await fetch(`${baseUrl()}/internal/sessions/validate`, {
+  const { fetcher, url } = await resolveFetch("/internal/sessions/validate");
+  const res = await fetcher(url, {
     method: "POST",
     headers: secretHeaders(),
     body: JSON.stringify({ token_hash: tokenHash }),
@@ -141,4 +100,22 @@ export async function validateSessionRemote(tokenHash: string): Promise<boolean>
 
 export async function destroySessionRemote(tokenHash: string) {
   await apiMutate("/internal/sessions", "DELETE", { token_hash: tokenHash });
+}
+
+export async function pingPresenceRemote(payload: {
+  uuid: string;
+  username?: string | null;
+  launcher_version?: string | null;
+}): Promise<PingResult> {
+  const result = await apiMutate<PingResult>("/launcher/ping", "POST", payload);
+  if (!result) throw new Error("Failed to record ping");
+  return result;
+}
+
+export async function listOnlineRemote(): Promise<OnlineList> {
+  return apiGet<OnlineList>("/launcher/online");
+}
+
+export async function countOnlineRemote(): Promise<OnlineCount> {
+  return apiGet<OnlineCount>("/launcher/online?c=1");
 }

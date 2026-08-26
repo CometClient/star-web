@@ -1244,6 +1244,120 @@
     margin-top: 1rem;
   }
 
+  /* Token redemption steps inside the beta modal */
+  .beta-modal__switch {
+    margin-top: 0.85rem;
+    width: 100%;
+    background: none;
+    border: none;
+    font-family: 'MultiTypePixel', 'Inter', sans-serif;
+    font-size: 0.625rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: hsl(var(--ocean-bright) / 0.75);
+    cursor: pointer;
+    transition: color 0.15s;
+  }
+
+  .beta-modal__switch:hover {
+    color: hsl(var(--ocean-bright));
+  }
+
+  .beta-modal__error {
+    margin-top: 0.6rem;
+    font-size: 0.75rem;
+    line-height: 1.5;
+    color: hsl(0 75% 68%);
+  }
+
+  .beta-modal__warn {
+    margin-top: 1rem;
+    font-size: 0.6875rem;
+    line-height: 1.6;
+    color: hsl(38 70% 62% / 0.8);
+  }
+
+  .beta-field {
+    width: 100%;
+    padding: 0.65rem 0.8rem;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.8125rem;
+    text-align: center;
+    color: hsl(var(--fg));
+    background: hsl(228 16% 4%);
+    border: 1px solid hsl(228 10% 18%);
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  .beta-field:focus {
+    border-color: hsl(var(--pink-hot) / 0.55);
+    box-shadow: 0 0 0 3px hsl(var(--pink-hot) / 0.12);
+  }
+
+  .beta-field::placeholder {
+    color: hsl(var(--fg) / 0.25);
+  }
+
+  .beta-skin {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    margin: 1rem 0 0.25rem;
+    padding: 0.9rem;
+    background: hsl(228 16% 4%);
+    border: 1px solid hsl(228 10% 16%);
+  }
+
+  .beta-skin img {
+    height: 8.5rem;
+    width: auto;
+    object-fit: contain;
+    filter: drop-shadow(0 0 20px hsl(var(--pink) / 0.22));
+  }
+
+  .beta-skin__uuid {
+    margin-top: 0.35rem;
+    font-size: 0.5625rem;
+    line-height: 1.5;
+    max-width: 8rem;
+    word-break: break-all;
+    color: hsl(var(--fg) / 0.32);
+  }
+
+  .beta-build {
+    margin-top: 0.75rem;
+    border: 1px solid hsl(228 10% 16%);
+  }
+
+  .beta-build > div {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.4rem 0.7rem;
+    font-size: 0.75rem;
+  }
+
+  .beta-build > div + div {
+    border-top: 1px solid hsl(228 10% 13%);
+  }
+
+  .beta-build dt {
+    color: hsl(var(--fg) / 0.42);
+  }
+
+  .beta-build dd {
+    margin: 0;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    color: hsl(var(--fg) / 0.85);
+  }
+
+  .btn-pixel.is-disabled {
+    pointer-events: none;
+    opacity: 0.4;
+  }
+
   /* Mobile nav */
   .mobile-nav-toggle {
     display: flex;

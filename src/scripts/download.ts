@@ -1,4 +1,5 @@
 import { detectPlatform, platformById } from "../lib/platform";
+import { initBetaRedeem } from "./beta";
 
 export function applyPlatformUi(root: ParentNode = document) {
   root.querySelectorAll<HTMLElement>("[data-detected-os]").forEach((el) => {
@@ -43,6 +44,7 @@ export function initDownloadSheet() {
 export function initSitePlatform() {
   applyPlatformUi(document);
   initDownloadSheet();
+  initBetaRedeem();
 }
 
 export { detectPlatform, platformById };

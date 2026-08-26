@@ -1,7 +1,10 @@
-import { verifyBetaToken as apiVerifyBetaToken } from "./api";
+import { verifyBetaToken as apiVerifyBetaToken, confirmBetaIdentity } from "./api";
 
 export { generateToken, hashToken } from "./beta-crypto";
+export type { BetaVerifyResponse } from "./api";
 
-export async function verifyBetaToken(email: string, token: string): Promise<boolean> {
-  return apiVerifyBetaToken(email.trim().toLowerCase(), token.trim());
-}
+/** Step 1 — validate the token without consuming it. */
+export const verifyBetaToken = apiVerifyBetaToken;
+
+/** Step 2 — confirm the identity, burn the token, receive a one-time link. */
+export const confirmBetaDownload = confirmBetaIdentity;

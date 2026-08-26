@@ -1,0 +1,120 @@
+---
+import SiteLayout from "../layouts/SiteLayout.astro";
+import Header from "../components/site/Header.astro";
+import FloatingFooter from "../components/site/FloatingFooter.astro";
+---
+
+<SiteLayout
+  title="Closed beta — Comet Client"
+  description="Redeem your Comet Client closed beta token."
+>
+  <Header />
+  <main class="flex min-h-screen flex-col">
+    <div class="hero-concept hero-concept--short relative h-64 sm:h-72">
+      <div class="hero-concept__bg" aria-hidden="true"></div>
+      <div class="relative z-[1] flex h-full items-end">
+        <div class="mx-auto w-full max-w-3xl px-4 pb-10 sm:px-6">
+          <p class="font-pixel text-[10px] tracking-[0.2em] text-white/40">Invite only</p>
+          <h1 class="font-pixel mt-2 text-4xl text-gradient-gold sm:text-5xl">Closed beta</h1>
+        </div>
+      </div>
+    </div>
+
+    <section class="page-body flex-1 px-4 py-14 sm:px-6">
+      <div class="mx-auto max-w-3xl">
+        <div class="grid gap-4 sm:grid-cols-[1.25fr_1fr]">
+          <div>
+            <h2 class="font-pixel text-lg text-white">Redeem your token</h2>
+            <p class="mt-3 text-sm leading-relaxed text-white/55">
+              Staff hand out tokens in waves through Discord. Each one belongs to a single
+              tester, works once, and mints a download link that expires within minutes.
+            </p>
+
+            <ol class="beta-steps mt-6">
+              <li><span>1</span> Enter the token staff issued you.</li>
+              <li><span>2</span> Confirm the Minecraft name and skin on file are yours.</li>
+              <li><span>3</span> Your token is spent and a one-time link is created.</li>
+              <li><span>4</span> Download straight away — the link works once.</li>
+            </ol>
+
+            <button type="button" class="btn-pixel btn-pixel--pink mt-7" data-download-sheet-open>
+              Redeem token
+            </button>
+          </div>
+
+          <aside class="beta-aside">
+            <p class="font-pixel text-[10px] tracking-[0.2em] text-pink-200/70">Rules</p>
+            <ul class="mt-3 space-y-2.5 text-xs leading-relaxed text-white/45">
+              <li>Don't share, stream, or leak beta builds.</li>
+              <li>Tokens are tied to you — leaks are traceable.</li>
+              <li>Need a re-download? Ask staff for a fresh token.</li>
+              <li>Report bugs in <span class="font-mono text-white/60">#beta-feedback</span>.</li>
+            </ul>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <FloatingFooter />
+  </main>
+</SiteLayout>
+
+<style>
+  .beta-steps {
+    display: grid;
+    gap: 0.75rem;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .beta-steps li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    font-size: 0.8125rem;
+    line-height: 1.6;
+    color: hsl(var(--fg) / 0.55);
+  }
+
+  .beta-steps span {
+    display: flex;
+    height: 1.35rem;
+    width: 1.35rem;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    font-family: 'MultiTypePixel', 'Inter', sans-serif;
+    font-size: 0.625rem;
+    color: hsl(var(--gold));
+    border: 1px solid hsl(var(--gold-dim) / 0.6);
+    background: hsl(228 16% 8%);
+  }
+
+  .beta-aside {
+    align-self: start;
+    padding: 1.15rem;
+    background: hsl(228 16% 5%);
+    border: 1px solid hsl(228 10% 14%);
+  }
+
+  .beta-aside ul {
+    list-style: none;
+    padding: 0;
+  }
+
+  .beta-aside li {
+    padding-left: 0.85rem;
+    position: relative;
+  }
+
+  .beta-aside li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.5rem;
+    height: 3px;
+    width: 3px;
+    background: hsl(var(--pink-hot) / 0.7);
+  }
+</style>

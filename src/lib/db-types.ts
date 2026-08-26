@@ -46,3 +46,34 @@ export interface LauncherVersion {
   published: number;
   published_at: string | null;
 }
+
+export interface OnlinePlayer {
+  uuid: string;
+  username: string | null;
+  launcher_version: string | null;
+  first_seen: string;
+  last_seen: string;
+  seconds_since_ping: number;
+}
+
+export interface OnlineCount {
+  count: number;
+  /** Most recent ping from any online player, null when nobody is online. */
+  last_ping: string | null;
+  /** When this snapshot was generated. */
+  updated_at: string;
+  window_seconds: number;
+}
+
+export interface OnlineList extends OnlineCount {
+  players: OnlinePlayer[];
+}
+
+export interface PingResult {
+  ok: true;
+  uuid: string;
+  username: string | null;
+  first_seen: string;
+  last_seen: string;
+  next_ping_seconds: number;
+}

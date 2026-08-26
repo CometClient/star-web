@@ -1,20 +1,34 @@
 import type { Env } from "./queries";
+import { handleBetaRoute } from "./beta-routes";
+import {
+  NAME_TTL_SECONDS,
+  PING_INTERVAL_SECONDS,
+  PRESENCE_RETENTION_SECONDS,
+  PRESENCE_WINDOW_SECONDS,
+  isoSecondsAgo,
+  normalizeUuid,
+  resolveUsernameDetailed,
+} from "./presence";
 import {
   corsHeaders,
+  countOnlinePresence,
   createSession,
   deleteNews,
   deleteStaff,
   destroySession,
   getLatestLauncherVersion,
   getNewsBySlug,
+  getPresence,
   getStaffById,
   json,
   listLauncherAnnouncements,
   listLauncherVersions,
   listNews,
+  listOnlinePresence,
   listStaff,
   requireSecret,
   slugify,
+  touchPresence,
   upsertNews,
   upsertStaff,
   validateSession,
@@ -83,6 +97,56 @@ export default {
         if (!latest) return attachCors(json({ error: "No published version" }, 404));
         return attachCors(
           json(latest, 200, { "Cache-Control": "public, max-age=60" }),
+        );
+      }
+
+      if (path === "/launcher/online" && request.method === "GET") {
+        const countOnly = ["1", "true", "yes"].includes(
+          (url.searchParams.get("c") ?? "").toLowerCase(),
+        );
+        const now = new Date();
+        const since = isoSecondsAgo(PRESENCE_WINDOW_SECONDS, now);
+        const headers = { "Cache-Control": "public, max-age=15" };
+
+        if (countOnly) {
+          const { count, last_ping } = await countOnlinePresence(env.DB, since);
+          return attachCors(
+            json(
+              {
+                count,
+                last_ping,
+                updated_at: now.toISOString(),
+                window_seconds: PRESENCE_WINDOW_SECONDS,
+              },
+              200,
+              headers,
+            ),
+          );
+        }
+
+        const rows = await listOnlinePresence(env.DB, since);
+        return attachCors(
+          json(
+            {
+              count: rows.length,
+              last_ping: rows[0]?.last_seen ?? null,
+              updated_at: now.toISOString(),
+              window_seconds: PRESENCE_WINDOW_SECONDS,
+              players: rows.map((row) => ({
+                uuid: row.mc_uuid,
+                username: row.mc_username,
+                launcher_version: row.launcher_version,
+                first_seen: row.first_seen,
+                last_seen: row.last_seen,
+                seconds_since_ping: Math.max(
+                  0,
+                  Math.round((now.getTime() - Date.parse(row.last_seen)) / 1000),
+                ),
+              })),
+            },
+            200,
+            headers,
+          ),
         );
       }
 
@@ -188,6 +252,71 @@ export default {
         if (denied) return attachCors(denied);
         await deleteStaff(env.DB, decodeURIComponent(staffId[1]));
         return attachCors(new Response(null, { status: 204, headers: cors }));
+      }
+
+      if (path === "/launcher/ping" && request.method === "POST") {
+        if (denied) return attachCors(denied);
+        const body = (await request.json()) as Record<string, unknown>;
+        const uuid = normalizeUuid(body.uuid ?? body.mc_uuid ?? body.id);
+        if (!uuid) return attachCors(json({ error: "Invalid or missing uuid" }, 400));
+
+        const now = new Date();
+        const existing = await getPresence(env.DB, uuid);
+
+        // Only hit Mojang when we have no name yet or the cached one is stale;
+        // a launcher pinging every couple of minutes must not become a scraper.
+        const nameStale =
+          !existing?.mc_username ||
+          !existing.name_checked_at ||
+          Date.parse(existing.name_checked_at) < now.getTime() - NAME_TTL_SECONDS * 1000;
+
+        let username = existing?.mc_username ?? null;
+        let nameCheckedAt: string | null = null;
+        let resolveAttempts: unknown[] = [];
+        if (nameStale) {
+          const resolved = await resolveUsernameDetailed(uuid);
+          resolveAttempts = resolved.attempts;
+          if (resolved.username) {
+            username = resolved.username;
+            nameCheckedAt = now.toISOString();
+          } else if (typeof body.username === "string" && body.username.trim()) {
+            // Every provider failed: fall back to the launcher's claim, but
+            // leave name_checked_at unset so we retry on the next ping.
+            username = body.username.trim();
+          }
+        }
+
+        const row = await touchPresence(
+          env.DB,
+          {
+            mc_uuid: uuid,
+            mc_username: username,
+            launcher_version:
+              typeof body.launcher_version === "string" ? body.launcher_version : null,
+            name_checked_at: nameCheckedAt,
+          },
+          now.toISOString(),
+          isoSecondsAgo(PRESENCE_RETENTION_SECONDS, now),
+        );
+
+        return attachCors(
+          json({
+            ok: true,
+            uuid,
+            username: row?.mc_username ?? username,
+            first_seen: row?.first_seen ?? now.toISOString(),
+            last_seen: row?.last_seen ?? now.toISOString(),
+            next_ping_seconds: PING_INTERVAL_SECONDS,
+            ...(url.searchParams.get("debug") === "1" ? { resolve_attempts: resolveAttempts } : {}),
+          }),
+        );
+      }
+
+      // Beta: testers, tokens, uploaded builds, one-time download links.
+      if (path.startsWith("/beta")) {
+        if (denied) return attachCors(denied);
+        const handled = await handleBetaRoute(request, env, path, url);
+        if (handled) return attachCors(handled);
       }
 
       // Internal session API (Astro auth proxy)

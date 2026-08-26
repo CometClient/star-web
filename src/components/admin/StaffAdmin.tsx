@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import BetaAdmin from "./BetaAdmin";
 
 type NewsPost = {
   id: string;
@@ -29,7 +30,7 @@ type StaffMember = {
   published: number;
 };
 
-type Tab = "news" | "staff";
+type Tab = "news" | "staff" | "beta";
 
 const inputClass =
   "w-full rounded-lg border border-white/10 bg-black/40 px-3 py-2 text-sm text-white outline-none focus:border-pink-400/40";
@@ -400,7 +401,7 @@ export default function StaffAdmin() {
 
       <div className="mx-auto max-w-5xl px-4 py-8 sm:px-8">
         <div className="mb-8 flex gap-2">
-          {(["news", "staff"] as Tab[]).map((t) => (
+          {(["news", "staff", "beta"] as Tab[]).map((t) => (
             <button
               key={t}
               type="button"
@@ -509,6 +510,8 @@ export default function StaffAdmin() {
             )}
           </div>
         )}
+
+        {tab === "beta" && <BetaAdmin />}
       </div>
     </div>
   );
