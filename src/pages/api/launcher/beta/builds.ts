@@ -2,6 +2,7 @@ import type { APIRoute } from "astro";
 import { requireStaff } from "@/lib/auth";
 import {
   deleteBetaBuild,
+  finalizeBetaBuild,
   listBetaBuilds,
   setBetaBuildActive,
   uploadBetaBuild,
@@ -19,10 +20,21 @@ export const GET: APIRoute = async (context) => {
   return new Response(JSON.stringify(data), { status, headers: jsonHeaders });
 };
 
-/** multipart/form-data: file, version, platform, notes. Stored in R2. */
+/**
+ * Two shapes:
+ *  - application/json  → finalize a direct-to-R2 upload (record the build row).
+ *  - multipart/form-data (file, version, platform, notes) → legacy inline upload.
+ */
 export const POST: APIRoute = async (context) => {
   const denied = await requireStaff(context);
   if (denied) return denied;
+
+  const contentType = context.request.headers.get("content-type") ?? "";
+  if (contentType.includes("application/json")) {
+    const meta = (await context.request.json().catch(() => ({}))) as Record<string, unknown>;
+    const { status, data } = await finalizeBetaBuild(meta);
+    return new Response(JSON.stringify(data), { status, headers: jsonHeaders });
+  }
 
   const form = await context.request.formData();
   const { status, data } = await uploadBetaBuild(form);

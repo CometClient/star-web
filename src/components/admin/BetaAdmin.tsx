@@ -70,6 +70,42 @@ function StatCard({ label, value }: { label: string; value: number | string }) {
   );
 }
 
+/** PUT a file straight to a presigned URL, reporting upload progress (0–100). */
+function putWithProgress(url: string, file: File, onProgress: (pct: number) => void): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open("PUT", url);
+    xhr.upload.onprogress = (ev) => {
+      if (ev.lengthComputable) onProgress(Math.round((ev.loaded / ev.total) * 100));
+    };
+    xhr.onload = () =>
+      xhr.status >= 200 && xhr.status < 300
+        ? resolve()
+        : reject(new Error(`Storage upload failed (${xhr.status})`));
+    xhr.onerror = () =>
+      reject(new Error("Storage upload failed — check the bucket's CORS policy allows PUT from this site."));
+    // No Content-Type header: it isn't part of the presigned signature, so
+    // sending one risks a signature mismatch on some S3 implementations.
+    xhr.send(file);
+  });
+}
+
+// Hashing reads the whole file into memory, so only fingerprint builds under this
+// size in the browser; larger ones store no sha256 (the size + R2 etag still verify).
+const SHA256_MAX_BYTES = 512 * 1024 * 1024;
+
+async function maybeSha256(file: File): Promise<string | null> {
+  if (file.size > SHA256_MAX_BYTES || !globalThis.crypto?.subtle) return null;
+  try {
+    const digest = await crypto.subtle.digest("SHA-256", await file.arrayBuffer());
+    return Array.from(new Uint8Array(digest))
+      .map((b) => b.toString(16).padStart(2, "0"))
+      .join("");
+  } catch {
+    return null;
+  }
+}
+
 export default function BetaAdmin() {
   const [section, setSection] = useState<"testers" | "builds" | "analytics">("testers");
   const [testers, setTesters] = useState<Tester[]>([]);
@@ -87,6 +123,7 @@ export default function BetaAdmin() {
   const [upload, setUpload] = useState({ version: "", platform: "universal", notes: "" });
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [progress, setProgress] = useState<number | null>(null);
 
   const loadTesters = useCallback(async () => {
     const res = await fetch("/api/launcher/beta");
@@ -166,28 +203,90 @@ export default function BetaAdmin() {
     await Promise.all([loadTokens(), loadTesters(), loadAnalytics()]);
   };
 
+  const finishUpload = async () => {
+    setFile(null);
+    setUpload({ version: "", platform: "universal", notes: "" });
+    await Promise.all([loadBuilds(), loadAnalytics()]);
+  };
+
+  /** Legacy path: stream the file through the workers (bounded by the ~100 MB
+   *  request-body limit). Used only when R2 direct upload isn't configured. */
+  const uploadInline = async (version: string, platform: string) => {
+    const form = new FormData();
+    form.set("file", file!);
+    form.set("version", version);
+    form.set("platform", platform);
+    form.set("notes", upload.notes);
+    const res = await fetch("/api/launcher/beta/builds", { method: "POST", body: form });
+    if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error ?? "Upload failed");
+    await finishUpload();
+  };
+
   const uploadBuild = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!file || !upload.version.trim()) {
       setError("Pick a file and set a version.");
       return;
     }
+    const version = upload.version.trim();
+    const platform = upload.platform.trim() || "universal";
     setUploading(true);
     setError("");
-    const form = new FormData();
-    form.set("file", file);
-    form.set("version", upload.version.trim());
-    form.set("platform", upload.platform.trim() || "universal");
-    form.set("notes", upload.notes);
-    const res = await fetch("/api/launcher/beta/builds", { method: "POST", body: form });
-    setUploading(false);
-    if (!res.ok) {
-      setError((await res.json().catch(() => ({}))).error ?? "Upload failed");
-      return;
+    setProgress(0);
+    try {
+      // 1. Ask for a presigned R2 URL (skips the worker body limit).
+      const presRes = await fetch("/api/launcher/beta/builds/presign", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ filename: file.name, content_type: file.type }),
+      });
+      if (presRes.status === 501) {
+        // Direct upload not configured — fall back to streaming through the worker.
+        setProgress(null);
+        await uploadInline(version, platform);
+        return;
+      }
+      if (!presRes.ok) {
+        throw new Error((await presRes.json().catch(() => ({}))).error ?? "Could not start upload");
+      }
+      const { id, storage_key, upload_url } = (await presRes.json()) as {
+        id: string;
+        storage_key: string;
+        upload_url: string;
+      };
+
+      // 2. PUT the file straight to R2, reporting progress.
+      await putWithProgress(upload_url, file, setProgress);
+
+      // 3. Fingerprint smaller builds in the browser (skip very large ones).
+      const sha256 = await maybeSha256(file);
+
+      // 4. Record the build row.
+      const finRes = await fetch("/api/launcher/beta/builds", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id,
+          storage_key,
+          version,
+          platform,
+          notes: upload.notes,
+          filename: file.name,
+          content_type: file.type || "application/octet-stream",
+          size_bytes: file.size,
+          sha256,
+        }),
+      });
+      if (!finRes.ok) {
+        throw new Error((await finRes.json().catch(() => ({}))).error ?? "Could not save build");
+      }
+      await finishUpload();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Upload failed");
+    } finally {
+      setUploading(false);
+      setProgress(null);
     }
-    setFile(null);
-    setUpload({ version: "", platform: "universal", notes: "" });
-    await Promise.all([loadBuilds(), loadAnalytics()]);
   };
 
   const toggleBuild = async (b: Build) => {
@@ -434,10 +533,23 @@ export default function BetaAdmin() {
               </div>
             </div>
             <button type="submit" className={`${btnPrimary} mt-4`} disabled={uploading}>
-              {uploading ? "Uploading…" : "Upload build"}
+              {uploading
+                ? progress !== null
+                  ? `Uploading… ${progress}%`
+                  : "Uploading…"
+                : "Upload build"}
             </button>
+            {progress !== null && (
+              <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-white/10">
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-pink-400 to-pink-300 transition-[width] duration-150"
+                  style={{ width: `${progress}%` }}
+                />
+              </div>
+            )}
             <p className="mt-2 text-xs text-white/35">
-              Stored privately — testers only ever reach it through a single-use link.
+              Uploaded directly to storage — large builds skip the 100&nbsp;MB request limit. Testers
+              only ever reach it through a single-use link.
             </p>
           </form>
 

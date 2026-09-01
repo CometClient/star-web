@@ -367,7 +367,7 @@ export default function StaffAdmin() {
     return (
       <div className={`${shellClass} flex items-center justify-center px-4`}>
         <form onSubmit={login} className="w-full max-w-sm rounded-2xl border border-white/10 bg-white/[0.03] p-8">
-          <img src="/comet-logo.png" alt="" className="mx-auto mb-4 h-12 w-12" />
+          <img src="/favicon.svg" alt="" className="mx-auto mb-4 h-12 w-12" />
           <h1 className="mb-6 text-center font-[Fastelar] text-xl tracking-wide">Staff login</h1>
           {error && <p className="mb-4 text-center text-sm text-red-400">{error}</p>}
           <label className={labelClass}>Email</label>
@@ -387,7 +387,7 @@ export default function StaffAdmin() {
       <header className="border-b border-white/10 px-4 py-4 sm:px-8">
         <div className="mx-auto flex max-w-5xl items-center justify-between">
           <div className="flex items-center gap-3">
-            <img src="/comet-logo.png" alt="" className="h-8 w-8" />
+            <img src="/favicon.svg" alt="" className="h-8 w-8" />
             <span className="font-[Fastelar] text-lg">Comet CMS</span>
           </div>
           <div className="flex items-center gap-4">

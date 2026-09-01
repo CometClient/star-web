@@ -1,0 +1,13 @@
+[
+  {
+    "AllowedOrigins": [
+      "https://cometclient.dev",
+      "https://www.cometclient.dev",
+      "http://localhost:4321"
+    ],
+    "AllowedMethods": ["PUT"],
+    "AllowedHeaders": ["*"],
+    "ExposeHeaders": ["ETag"],
+    "MaxAgeSeconds": 3600
+  }
+]

@@ -145,6 +145,56 @@
     -webkit-backdrop-filter: blur(20px);
   }
 
+  /* Brand mark — the planet, tinted and glowing */
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    text-decoration: none;
+  }
+
+  .brand__planet {
+    position: relative;
+    display: inline-flex;
+    flex: none;
+    color: hsl(var(--pink));
+  }
+
+  .brand__planet::before {
+    content: '';
+    position: absolute;
+    inset: -30%;
+    z-index: 0;
+    background: radial-gradient(circle, hsl(var(--pink) / 0.4), transparent 66%);
+    filter: blur(5px);
+    pointer-events: none;
+  }
+
+  .brand__planet svg {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    filter: drop-shadow(0 0 9px hsl(var(--pink) / 0.5));
+    transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .brand:hover .brand__planet svg {
+    transform: rotate(18deg) scale(1.05);
+  }
+
+  .brand__wordmark {
+    font-family: 'MultiTypePixel', 'Inter', sans-serif;
+    letter-spacing: 0.04em;
+    text-transform: lowercase;
+    color: hsl(var(--fg));
+    line-height: 1;
+  }
+
+  .brand__wordmark .dot {
+    color: hsl(var(--pink-hot));
+  }
+
   .nav-link {
     display: inline-flex;
     align-items: center;
@@ -1463,6 +1513,44 @@
   .feature-card-v2--ocean:hover { border-color: hsl(var(--ocean) / 0.4); }
   .feature-card-v2--emerald:hover { border-color: hsl(var(--emerald) / 0.4); }
 
+  .feature-card-v2__head {
+    margin-bottom: 1rem;
+  }
+
+  .feature-card-v2__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 0.55rem;
+    background: hsl(var(--pink) / 0.1);
+    border: 1px solid hsl(var(--pink) / 0.2);
+    color: hsl(var(--pink-hot));
+    transition: transform 0.2s ease, background 0.2s, border-color 0.2s;
+  }
+
+  .feature-card-v2__icon svg {
+    width: 1.35rem;
+    height: 1.35rem;
+  }
+
+  .feature-card-v2--ocean .feature-card-v2__icon {
+    background: hsl(var(--ocean) / 0.1);
+    border-color: hsl(var(--ocean) / 0.22);
+    color: hsl(var(--ocean-bright));
+  }
+
+  .feature-card-v2--emerald .feature-card-v2__icon {
+    background: hsl(var(--emerald) / 0.1);
+    border-color: hsl(var(--emerald) / 0.22);
+    color: hsl(var(--emerald));
+  }
+
+  .feature-card-v2:hover .feature-card-v2__icon {
+    transform: translateY(-1px) scale(1.05);
+  }
+
   .feature-card-v2__num {
     position: absolute;
     top: 1rem;
@@ -1631,5 +1719,72 @@
   .platform-panel-wrap.is-open + .platform-panel,
   .platform-panel-wrap.is-open .platform-panel {
     border-top: 1px solid hsl(228 12% 22%);
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   Global polish — applies across every page (Astro + React)
+   ───────────────────────────────────────────────────────────────── */
+
+/* Themed, slimmer scrollbars */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(228 12% 22%) transparent;
+}
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: hsl(228 12% 18%);
+  border: 2px solid var(--page-hex);
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--pink) / 0.4);
+}
+
+/* Keyboard focus ring in the brand accent — scoped so it never fights the
+   React UI's own ring styles. */
+a:focus-visible,
+.nav-link:focus-visible,
+.site-footer__link:focus-visible,
+.mobile-nav-toggle:focus-visible {
+  outline: 2px solid hsl(var(--pink) / 0.7);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
+.btn-pixel:focus-visible {
+  outline: none;
+  border-color: hsl(var(--pink) / 0.9);
+  box-shadow: inset 0 1px 0 hsl(var(--pink) / 0.28), 0 0 0 2px hsl(var(--pink) / 0.35);
+}
+
+/* Tactile press on the pixel buttons */
+.btn-pixel:active {
+  transform: translateY(1px) scale(0.99);
+  filter: brightness(0.94);
+}
+
+/* Current-page highlight in the nav */
+.nav-link.is-active,
+.nav-link[aria-current="page"] {
+  color: hsl(0 0% 100%);
+  background: hsl(var(--pink) / 0.1);
+}
+
+/* Honor reduced-motion — quiets the hero word swap, brand spin, etc. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
   }
 }

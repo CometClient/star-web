@@ -32,10 +32,16 @@ import {
 } from "./beta-queries";
 import { normalizeUuid } from "./presence";
 import { json } from "./queries";
+import { hasR2Creds, presignR2Put } from "./r2-presign";
 
 export interface BetaEnv {
   DB: D1Database;
   BETA_BUILDS?: R2Bucket;
+  // R2 S3-API credentials for presigned direct uploads (worker secrets).
+  R2_ACCOUNT_ID?: string;
+  R2_ACCESS_KEY_ID?: string;
+  R2_SECRET_ACCESS_KEY?: string;
+  R2_BUCKET?: string;
 }
 
 /** Token state, spelled out so the UI can say exactly why a token failed. */
@@ -204,7 +210,67 @@ export async function handleBetaRoute(
     return json(await listBuilds(env.DB, url.searchParams.get("active") === "1"));
   }
 
+  // Step 1 of a direct upload: mint a presigned R2 PUT URL so the browser sends
+  // the (potentially large) file straight to the bucket, never through a Worker.
+  if (path === "/beta/builds/presign" && method === "POST") {
+    if (!hasR2Creds(env)) {
+      return json(
+        { error: "Direct upload not configured: set R2_ACCOUNT_ID, R2_ACCESS_KEY_ID and R2_SECRET_ACCESS_KEY on the worker" },
+        501,
+      );
+    }
+    const body = (await request.json().catch(() => ({}))) as Record<string, unknown>;
+    const filename = String(body.filename ?? "").trim();
+    if (!filename) return json({ error: "filename is required" }, 400);
+    const id = crypto.randomUUID();
+    // Keep the name but strip path separators a browser might send.
+    const safeName = filename.replace(/[/\\]/g, "_");
+    const storageKey = `builds/${id}/${safeName}`;
+    const uploadUrl = await presignR2Put(env, storageKey, 3600);
+    return json({ id, storage_key: storageKey, upload_url: uploadUrl, expires_in: 3600 });
+  }
+
   if (path === "/beta/builds" && method === "POST") {
+    const contentType = request.headers.get("content-type") ?? "";
+
+    // Step 2 of a direct upload: the file is already in R2, just record the row.
+    if (contentType.includes("application/json")) {
+      const body = (await request.json().catch(() => ({}))) as Record<string, unknown>;
+      const version = String(body.version ?? "").trim();
+      if (!version) return json({ error: "version is required" }, 400);
+      const storageKey = String(body.storage_key ?? "").trim();
+      if (!storageKey) return json({ error: "storage_key is required" }, 400);
+      const id = String(body.id ?? crypto.randomUUID());
+
+      // Confirm the upload actually landed, and trust R2 for the real size.
+      let sizeBytes = Number(body.size_bytes ?? 0);
+      if (env.BETA_BUILDS) {
+        const head = await env.BETA_BUILDS.head(storageKey);
+        if (!head) return json({ error: "Upload not found in storage — did the PUT succeed?" }, 400);
+        sizeBytes = head.size;
+      }
+
+      const platform = String(body.platform ?? "universal").trim() || "universal";
+      const build = await createBuild(env.DB, {
+        id,
+        version,
+        platform,
+        filename: String(body.filename ?? storageKey.split("/").pop() ?? "build"),
+        content_type: body.content_type ? String(body.content_type) : "application/octet-stream",
+        size_bytes: sizeBytes,
+        sha256: body.sha256 ? String(body.sha256) : null,
+        storage_key: storageKey,
+        notes: String(body.notes ?? "") || null,
+        is_active: body.is_active === false || body.is_active === 0 ? 0 : 1,
+        created_at: nowIso,
+      });
+      await logEvent(env.DB, { kind: "build_uploaded", build_id: id, detail: `${version} · ${platform}` }, nowIso);
+      return json(build, 201);
+    }
+
+    // Legacy inline multipart upload — small builds, or when R2 creds aren't set.
+    // Bounded by the Worker request-body limit; the presigned path above is the
+    // one that handles large files.
     if (!env.BETA_BUILDS) {
       return json({ error: "Build storage (R2 binding BETA_BUILDS) is not configured" }, 501);
     }

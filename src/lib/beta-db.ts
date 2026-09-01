@@ -132,9 +132,28 @@ export function listBetaBuilds(activeOnly = false) {
   return apiJson<BetaBuildRow[]>(`/beta/builds${q({ active: activeOnly ? "1" : undefined })}`);
 }
 
-/** Streams the multipart body straight through to the worker, which puts it in R2. */
+/** Streams the multipart body straight through to the worker, which puts it in R2.
+ *  Bounded by the Worker request-body limit — used only as a fallback for small
+ *  builds or when R2 direct-upload credentials aren't configured. */
 export function uploadBetaBuild(form: FormData) {
   return apiJson<BetaBuildRow>("/beta/builds", { method: "POST", body: form });
+}
+
+/** Step 1 of a direct upload: ask the worker for a presigned R2 PUT URL. */
+export function presignBetaBuild(meta: { filename: string; content_type?: string }) {
+  return apiJson<{ id: string; storage_key: string; upload_url: string; expires_in: number; error?: string }>(
+    "/beta/builds/presign",
+    { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(meta) },
+  );
+}
+
+/** Step 3 of a direct upload: record the build row once the file is in R2. */
+export function finalizeBetaBuild(meta: Record<string, unknown>) {
+  return apiJson<BetaBuildRow>("/beta/builds", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(meta),
+  });
 }
 
 export function setBetaBuildActive(id: string, isActive: boolean) {

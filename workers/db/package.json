@@ -13,8 +13,11 @@
     "d1:seed:remote": "wrangler d1 execute comet-cms --remote --file=../../db/seed.sql"
   },
   "devDependencies": {
-    "wrangler": "^4.93.1",
     "@cloudflare/workers-types": "^4.20250525.0",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "wrangler": "^4.93.1"
+  },
+  "dependencies": {
+    "aws4fetch": "^1.0.20"
   }
 }
