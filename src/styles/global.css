@@ -86,11 +86,13 @@
 
   .hero-preview__frame {
     overflow: hidden;
-    border: 1px solid hsl(228 10% 16%);
-    border-radius: 0.65rem;
+    /* A Minecraft GUI window: sharp, beveled edges. */
+    border: 2px solid hsl(228 10% 18%);
+    border-radius: 4px;
     background: hsl(228 12% 6% / 0.85);
     box-shadow:
-      0 0 0 1px hsl(220 20% 98% / 0.03) inset,
+      inset 2px 2px 0 hsl(0 0% 100% / 0.05),
+      inset -2px -2px 0 hsl(0 0% 0% / 0.5),
       0 32px 80px hsl(0 0% 0% / 0.55);
   }
 
@@ -547,15 +549,17 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    border: 1px solid hsl(228 10% 12%);
+    border: 2px solid hsl(228 10% 14%);
     background: hsl(228 13% 5%);
+    box-shadow: 0 3px 0 hsl(228 45% 3% / 0.55);
     text-decoration: none;
-    transition: border-color 0.2s, box-shadow 0.2s;
+    transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
   }
 
   .news-card-v2:hover {
-    border-color: hsl(var(--gold-dim) / 0.55);
-    box-shadow: 0 16px 48px hsl(0 0% 0% / 0.35);
+    border-color: hsl(var(--gold-dim) / 0.6);
+    transform: translateY(-3px);
+    box-shadow: 0 3px 0 hsl(228 45% 3% / 0.55), 0 16px 48px hsl(0 0% 0% / 0.4);
   }
 
   .news-card-v2--featured {
@@ -1498,15 +1502,26 @@
   .feature-card-v2 {
     position: relative;
     padding: 1.5rem;
-    background: hsl(228 12% 6%);
-    border: 1px solid hsl(228 10% 14%);
+    /* Faint pixel dither over the panel, like a Minecraft GUI. */
+    background:
+      repeating-conic-gradient(hsl(0 0% 100% / 0.015) 0% 25%, transparent 0% 50%) 0 0 / 4px 4px,
+      hsl(228 12% 6%);
+    /* Beveled inventory-slot edges: light top-left, dark bottom-right. */
+    border: 2px solid hsl(228 10% 15%);
+    box-shadow:
+      inset 2px 2px 0 hsl(228 14% 20% / 0.5),
+      inset -2px -2px 0 hsl(228 40% 2% / 0.65);
+    image-rendering: pixelated;
     transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
   }
 
   .feature-card-v2:hover {
     transform: translateY(-3px);
-    border-color: hsl(var(--pink-deep) / 0.35);
-    box-shadow: 0 16px 48px hsl(0 0% 0% / 0.35);
+    border-color: hsl(var(--pink-deep) / 0.4);
+    box-shadow:
+      inset 2px 2px 0 hsl(228 14% 22% / 0.55),
+      inset -2px -2px 0 hsl(228 40% 2% / 0.65),
+      0 16px 48px hsl(0 0% 0% / 0.4);
   }
 
   .feature-card-v2--pink:hover { border-color: hsl(var(--pink) / 0.35); }
@@ -1523,10 +1538,15 @@
     justify-content: center;
     width: 2.5rem;
     height: 2.5rem;
-    border-radius: 0.55rem;
+    /* Sharp, recessed item-slot. */
+    border-radius: 3px;
     background: hsl(var(--pink) / 0.1);
-    border: 1px solid hsl(var(--pink) / 0.2);
+    border: 1px solid hsl(var(--pink) / 0.22);
+    box-shadow:
+      inset 2px 2px 0 hsl(0 0% 100% / 0.06),
+      inset -2px -2px 0 hsl(0 0% 0% / 0.4);
     color: hsl(var(--pink-hot));
+    image-rendering: pixelated;
     transition: transform 0.2s ease, background 0.2s, border-color 0.2s;
   }
 
@@ -1764,10 +1784,32 @@ a:focus-visible,
   box-shadow: inset 0 1px 0 hsl(var(--pink) / 0.28), 0 0 0 2px hsl(var(--pink) / 0.35);
 }
 
-/* Tactile press on the pixel buttons */
+/* Tactile block-press on the pixel buttons */
 .btn-pixel:active {
-  transform: translateY(1px) scale(0.99);
-  filter: brightness(0.94);
+  transform: translateY(2px);
+  filter: brightness(0.92);
+  box-shadow: inset 0 2px 0 hsl(0 0% 0% / 0.35);
+}
+
+/* Reusable Minecraft GUI bevel — light top-left edge, dark bottom-right. */
+.mc-slot {
+  border: 2px solid hsl(228 10% 15%);
+  box-shadow:
+    inset 2px 2px 0 hsl(0 0% 100% / 0.05),
+    inset -2px -2px 0 hsl(0 0% 0% / 0.4);
+  image-rendering: pixelated;
+}
+
+/* Blocky pixel divider, in place of a plain <hr>. */
+.pixel-rule {
+  height: 4px;
+  border: 0;
+  background: repeating-linear-gradient(
+    90deg,
+    hsl(228 12% 24%) 0 6px,
+    transparent 6px 12px
+  );
+  opacity: 0.7;
 }
 
 /* Current-page highlight in the nav */
