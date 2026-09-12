@@ -25,13 +25,17 @@ const items = [
       <p class="font-pixel text-[10px] tracking-[0.25em] text-white/40">Learn more</p>
       <h2 class="font-pixel mt-2 text-3xl text-gradient-gold sm:text-4xl">Dive in</h2>
       <p class="mt-3 max-w-md text-sm text-white/45">Everything you need before your first launch.</p>
+      <div class="xp-bar mt-4" aria-hidden="true"></div>
     </div>
 
-    <div class="space-y-0 divide-y divide-white/5 border border-white/5 bg-[hsl(228,12%,8%)]">
+    <div class="dive-list">
       {items.map((item, i) => (
         <details class="group dive-item" open={i === 0}>
           <summary class="dive-item__summary">
-            <span class="font-pixel text-sm text-white/90 group-open:text-gradient-gold sm:text-base">{item.title}</span>
+            <span class="dive-item__q">
+              <span class="dive-item__badge" aria-hidden="true">{String(i + 1).padStart(2, "0")}</span>
+              <span class="font-pixel text-sm text-white/90 group-open:text-gradient-gold sm:text-base">{item.title}</span>
+            </span>
             <span class="dive-item__chevron font-mono text-white/30" aria-hidden="true">+</span>
           </summary>
           <div class="dive-item__body">

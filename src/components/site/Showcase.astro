@@ -40,19 +40,27 @@ const highlights = [
 
       <div class="order-1 lg:order-2">
         <p class="font-pixel mb-3 text-[10px] uppercase tracking-[0.25em] text-white/35">Built-in hosting</p>
-        <h2 class="font-pixel mb-6 text-3xl leading-tight text-white sm:text-4xl">
+        <h2 class="font-pixel mb-4 text-3xl leading-tight text-white sm:text-4xl">
           Your server, <span class="text-gradient-ocean">out the box</span>
         </h2>
-        <p class="mb-8 text-base leading-relaxed text-white/50">
-          Create a Paper, Folia, Leaf, or Purpur world without installing Java or juggling
-          third-party software. Comet runs it on your machine — tuned to your RAM — and your
-          friends connect like any other multiplayer server.
+        <div class="xp-bar mb-6" aria-hidden="true"></div>
+        <p class="mb-5 text-base leading-relaxed text-white/50">
+          Create a server without installing Java or juggling third-party software. Comet runs
+          it on your machine — tuned to your RAM — and your friends connect like any other
+          multiplayer server.
         </p>
 
-        <ul class="space-y-4">
+        <div class="host-chips mb-8">
+          {serverTypes.map((type) => (
+            <span class="host-chip">{type}</span>
+          ))}
+          <span class="host-chip host-chip--accent">Public · Private</span>
+        </div>
+
+        <ul class="space-y-3">
           {highlights.map((item) => (
-            <li class="flex items-start gap-3 text-sm text-white/60">
-              <span class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center border border-emerald-500/30 bg-emerald-500/10 text-[10px] text-emerald-300">✓</span>
+            <li class="host-perk">
+              <span class="host-perk__check" aria-hidden="true">✓</span>
               {item}
             </li>
           ))}

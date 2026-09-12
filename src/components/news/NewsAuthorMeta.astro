@@ -8,7 +8,7 @@ import {
   readMinutes,
   wasEdited,
 } from "../../lib/news-format";
-import { craftyBust } from "../../lib/crafty";
+import { craftyBust, mcHeadsHead } from "../../lib/crafty";
 
 interface Props {
   post: NewsPost;
@@ -31,6 +31,7 @@ const avatarSize = size === "sm" ? 40 : 52;
       height={avatarSize}
       class="news-meta__avatar"
       loading="lazy"
+      onerror={`this.onerror=null;this.src=${JSON.stringify(mcHeadsHead(username))}`}
     />
   )}
   <div class="news-meta__text">

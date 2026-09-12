@@ -4,6 +4,9 @@ import DownloadButton from "./DownloadButton.astro";
 
 <section class="hero-concept relative min-h-[100dvh] overflow-hidden">
   <div class="hero-concept__bg" aria-hidden="true"></div>
+  <div class="hero-particles" aria-hidden="true">
+    <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+  </div>
 
   <div class="relative z-[1] mx-auto flex min-h-[100dvh] max-w-6xl flex-col justify-end px-4 pb-20 pt-32 sm:px-6 sm:pb-28">
     <div id="announcement" class="mb-8 hidden max-w-md">
@@ -20,14 +23,17 @@ import DownloadButton from "./DownloadButton.astro";
           Fabric Based Launcher · Closed Beta
         </p>
 
-        <h1 class="font-pixel mb-6 text-[clamp(2.25rem,6vw,3.75rem)] leading-[1.02]">
-          <span class="text-gradient-ocean">Dive in.</span>
-          <br />
-          <span class="text-white">Launch </span>
-          <span class="hero-rotate inline-block min-w-[5.5ch] align-bottom">
-            <span id="hero-rotate-word" class="hero-rotate__word text-gradient-gold">faster.</span>
-          </span>
-        </h1>
+        <div class="relative inline-block">
+          <span id="hero-splash" class="splash-text" aria-hidden="true">Fabric-first!</span>
+          <h1 class="font-pixel mb-6 text-[clamp(2.25rem,6vw,3.75rem)] leading-[1.02]">
+            <span class="text-gradient-ocean">Dive in.</span>
+            <br />
+            <span class="text-white">Launch </span>
+            <span class="hero-rotate inline-block min-w-[5.5ch] align-bottom">
+              <span id="hero-rotate-word" class="hero-rotate__word text-gradient-gold">faster.</span>
+            </span>
+          </h1>
+        </div>
 
         <p class="mb-9 max-w-md text-base leading-relaxed text-white/55 sm:text-lg">
          The next generation of Minecraft launchers. With a focus on performance, stability, and more.
@@ -37,6 +43,12 @@ import DownloadButton from "./DownloadButton.astro";
           <DownloadButton />
           <a href="#features" class="btn-pixel btn-pixel--blue shrink-0 self-start">See features</a>
         </div>
+
+        <ul class="hero-stats" aria-label="Launcher highlights">
+          <li class="hero-stat"><span class="hero-stat__num text-gradient-gold">2×</span> faster frames</li>
+          <li class="hero-stat"><span class="hero-stat__num text-gradient-ocean">15+</span> curated mods</li>
+          <li class="hero-stat"><span class="hero-stat__num text-gradient-pink">1.21</span> fabric ready</li>
+        </ul>
       </div>
 
       <div class="hero-preview hidden md:block">
@@ -62,6 +74,19 @@ import DownloadButton from "./DownloadButton.astro";
 </section>
 
 <script>
+  const splashLines = [
+    "Fabric-first!",
+    "No Java required!",
+    "Also try water!",
+    "Punch trees faster!",
+    "Now in closed beta!",
+    "100% blocky!",
+    "Creeper-approved!",
+    "Renewable!",
+  ];
+  const splashEl = document.getElementById("hero-splash");
+  if (splashEl) splashEl.textContent = splashLines[Math.floor(Math.random() * splashLines.length)];
+
   const rotateWords = ["faster.", "smarter.", "smoother.", "cleaner.", "better.", "stronger."];
   let rotateIndex = 0;
   const rotateEl = document.getElementById("hero-rotate-word");

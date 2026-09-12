@@ -24,15 +24,16 @@ const sources = [
       <div>
         <p class="font-pixel text-[10px] uppercase tracking-[0.22em] text-white/30">Mod manager</p>
         <h2 class="font-pixel mt-2 text-3xl text-gradient-gold sm:text-4xl">Install any mod</h2>
+        <div class="xp-bar mt-4" aria-hidden="true"></div>
         <p class="mt-4 max-w-md text-sm leading-relaxed text-white/45">
           Modrinth, Modpacks, or a file on your desktop — Comet handles compatibility,
           dependencies, and loading without extra tools.
         </p>
 
-        <ul class="mt-8 space-y-4">
-          {sources.map((source) => (
+        <ul class="mt-8 space-y-3">
+          {sources.map((source, i) => (
             <li class={`mod-source mod-source--${source.color}`}>
-              <span class="mod-source__dot" aria-hidden="true"></span>
+              <span class="mod-source__slot" aria-hidden="true">{i + 1}</span>
               <div>
                 <h3 class="font-pixel text-sm tracking-[0.12em] text-white/80">{source.label}</h3>
                 <p class="mt-1 text-xs leading-relaxed text-white/42">{source.desc}</p>
