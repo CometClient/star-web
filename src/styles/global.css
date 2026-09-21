@@ -1423,6 +1423,39 @@
     color: hsl(var(--fg) / 0.32);
   }
 
+  .beta-platform {
+    margin-top: 0.75rem;
+  }
+
+  .beta-platform__label {
+    margin: 0.55rem 0 0.35rem;
+    font-size: 0.625rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: hsl(var(--fg) / 0.42);
+  }
+
+  .beta-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+  }
+
+  .beta-chip {
+    padding: 0.28rem 0.65rem;
+    font-size: 0.6875rem;
+    color: hsl(var(--fg) / 0.55);
+    background: hsl(228 16% 4%);
+    border: 1px solid hsl(228 10% 18%);
+    cursor: pointer;
+  }
+
+  .beta-chip.is-active {
+    color: hsl(var(--pink-hot));
+    border-color: hsl(var(--pink-hot) / 0.45);
+    background: hsl(var(--pink-hot) / 0.1);
+  }
+
   .beta-build {
     margin-top: 0.75rem;
     border: 1px solid hsl(228 10% 16%);

@@ -3,6 +3,8 @@ import {
   type BetaBuild,
   generateBetaToken,
   hashBetaToken,
+  normalizePlatformTag,
+  publicBuild,
   resolveUsername,
   sha256Hash,
   skinUrls,
@@ -18,7 +20,6 @@ import {
   deleteToken,
   getBuild,
   getDownload,
-  getLatestBuild,
   getTester,
   getTokenByHash,
   listBuilds,
@@ -250,7 +251,7 @@ export async function handleBetaRoute(
         sizeBytes = head.size;
       }
 
-      const platform = String(body.platform ?? "universal").trim() || "universal";
+      const platform = normalizePlatformTag(String(body.platform ?? "universal"));
       const build = await createBuild(env.DB, {
         id,
         version,
@@ -280,7 +281,7 @@ export async function handleBetaRoute(
 
     const version = String(form.get("version") ?? "").trim();
     if (!version) return json({ error: "version is required" }, 400);
-    const platform = String(form.get("platform") ?? "universal").trim() || "universal";
+    const platform = normalizePlatformTag(String(form.get("platform") ?? "universal"));
 
     const bytes = await file.arrayBuffer();
     const id = crypto.randomUUID();
@@ -354,9 +355,11 @@ export async function handleBetaRoute(
     let username = tester.mc_username;
     if (tester.mc_uuid) username = (await resolveUsername(tester.mc_uuid)) ?? username;
 
-    const build = token.build_id ? await getBuild(env.DB, token.build_id) : await getLatestBuild(env.DB);
+    const pinned = token.build_id ? await getBuild(env.DB, token.build_id) : null;
+    const builds = pinned ? [pinned] : await listBuilds(env.DB, true);
     await logEvent(env.DB, { kind: "verify_ok", tester_id: tester.id, token_id: token.id }, nowIso);
 
+    const listed = builds.map(publicBuild);
     return json({
       ok: true,
       token_id: token.id,
@@ -367,17 +370,9 @@ export async function handleBetaRoute(
         mc_uuid: tester.mc_uuid,
         ...skinUrls(username, tester.mc_uuid),
       },
-      build: build
-        ? {
-            id: build.id,
-            version: build.version,
-            platform: build.platform,
-            filename: build.filename,
-            size_bytes: build.size_bytes,
-            sha256: build.sha256,
-            notes: build.notes,
-          }
-        : null,
+      build: listed[0] ?? null,
+      builds: listed,
+      pinned_build: Boolean(pinned),
       link_ttl_seconds: DOWNLOAD_LINK_TTL_SECONDS,
     });
   }
@@ -406,9 +401,22 @@ export async function handleBetaRoute(
       return json({ error: "Beta access is not active", reason: "inactive" }, 403);
     }
 
-    const build: BetaBuild | null = token.build_id
-      ? await getBuild(env.DB, token.build_id)
-      : await getLatestBuild(env.DB);
+    const requestedId = typeof body.build_id === "string" && body.build_id ? body.build_id : "";
+    let build: BetaBuild | null = null;
+    if (token.build_id) {
+      build = await getBuild(env.DB, token.build_id);
+    } else if (requestedId) {
+      build = await getBuild(env.DB, requestedId);
+      if (build && !build.is_active) {
+        return json({ error: "That build is no longer active", reason: "no_build" }, 404);
+      }
+    } else {
+      const active = await listBuilds(env.DB, true);
+      if (active.length > 1) {
+        return json({ error: "Pick a platform to download", reason: "platform_required" }, 400);
+      }
+      build = active[0] ?? null;
+    }
     if (!build) return json({ error: "No beta build is available yet", reason: "no_build" }, 404);
 
     const downloadId = crypto.randomUUID().replace(/-/g, "") + crypto.randomUUID().replace(/-/g, "");

@@ -5,6 +5,18 @@
  * token and mints a link that works exactly once.
  */
 
+import {
+  BETA_ARCH_OPTIONS,
+  BETA_OS_OPTIONS,
+  detectArch,
+  detectOs,
+  pickBuild,
+  platformLabel,
+  type BetaArch,
+  type BetaBuildInfo,
+  type BetaOs,
+} from "../lib/beta-platforms";
+
 type Step = "intro" | "token" | "confirm" | "done";
 
 interface VerifyResponse {
@@ -15,13 +27,9 @@ interface VerifyResponse {
     mc_uuid: string | null;
     render_url: string;
   };
-  build: {
-    id: string;
-    version: string;
-    platform: string;
-    filename: string;
-    size_bytes: number;
-  } | null;
+  build: BetaBuildInfo | null;
+  builds?: BetaBuildInfo[];
+  pinned_build?: boolean;
 }
 
 interface ConfirmResponse {
@@ -40,6 +48,7 @@ const REASONS: Record<string, string> = {
   inactive: "Beta access isn't active for this account.",
   no_build: "No beta build has been published yet — your token is unspent.",
   missing: "Enter your beta token.",
+  platform_required: "Pick the OS and architecture that match your machine.",
 };
 
 function formatBytes(bytes: number) {
@@ -52,6 +61,14 @@ function formatBytes(bytes: number) {
 async function readError(res: Response) {
   const body = (await res.json().catch(() => ({}))) as { error?: string; reason?: string };
   return (body.reason && REASONS[body.reason]) || body.error || "Something went wrong. Try again.";
+}
+
+function chip(label: string, active: boolean): HTMLButtonElement {
+  const btn = document.createElement("button");
+  btn.type = "button";
+  btn.className = `beta-chip${active ? " is-active" : ""}`;
+  btn.textContent = label;
+  return btn;
 }
 
 export function initBetaRedeem() {
@@ -74,10 +91,22 @@ export function initBetaRedeem() {
   const confirmBtn = $<HTMLButtonElement>("[data-beta-confirm]");
   const downloadLink = $<HTMLAnchorElement>("[data-beta-download]");
   const countdown = $<HTMLElement>("[data-beta-countdown]");
+  const osBox = $<HTMLElement>("[data-beta-os]");
+  const archBox = $<HTMLElement>("[data-beta-arch]");
+  const picker = $<HTMLElement>("[data-beta-platform-picker]");
+  const empty = $<HTMLElement>("[data-beta-platform-empty]");
 
   let token = "";
-  let buildId: string | undefined;
+  let builds: BetaBuildInfo[] = [];
+  let pinned = false;
+  let os: BetaOs = detectOs();
+  let arch: BetaArch = "arm64";
   let timer: number | undefined;
+
+  void detectArch().then((detected) => {
+    arch = detected;
+    renderPicker();
+  });
 
   const show = (step: Step) => {
     steps.forEach((el, key) => {
@@ -96,6 +125,55 @@ export function initBetaRedeem() {
     if (!btn) return;
     btn.disabled = on;
     btn.textContent = label;
+  };
+
+  const selectedBuild = () => pickBuild(builds, os, arch);
+
+  const renderBuild = () => {
+    const selected = selectedBuild();
+    const buildBox = $<HTMLElement>("[data-beta-build]");
+    if (buildBox) buildBox.hidden = !selected;
+    if (empty) empty.hidden = Boolean(selected) || builds.length === 0;
+    if (selected) {
+      const set = (sel: string, value: string) => {
+        const el = $<HTMLElement>(sel);
+        if (el) el.textContent = value;
+      };
+      set("[data-beta-build-version]", selected.version);
+      set("[data-beta-build-platform]", platformLabel(selected.platform));
+      set("[data-beta-build-size]", formatBytes(selected.size_bytes));
+    }
+    if (confirmBtn) confirmBtn.disabled = !selected;
+  };
+
+  const renderPicker = () => {
+    if (!osBox || !archBox || !picker) {
+      renderBuild();
+      return;
+    }
+    picker.hidden = pinned || builds.length === 0;
+    osBox.replaceChildren(
+      ...BETA_OS_OPTIONS.map((opt) => {
+        const btn = chip(opt.label, os === opt.id);
+        btn.addEventListener("click", () => {
+          os = opt.id;
+          renderPicker();
+        });
+        return btn;
+      }),
+    );
+    archBox.replaceChildren(
+      ...BETA_ARCH_OPTIONS.map((opt) => {
+        const btn = chip(opt.label, arch === opt.id);
+        btn.title = opt.hint;
+        btn.addEventListener("click", () => {
+          arch = opt.id;
+          renderPicker();
+        });
+        return btn;
+      }),
+    );
+    renderBuild();
   };
 
   sheet.querySelectorAll<HTMLElement>("[data-beta-goto]").forEach((el) => {
@@ -123,7 +201,8 @@ export function initBetaRedeem() {
 
       const data = (await res.json()) as VerifyResponse;
       token = candidate;
-      buildId = data.build?.id;
+      builds = data.builds ?? (data.build ? [data.build] : []);
+      pinned = Boolean(data.pinned_build);
 
       const render = $<HTMLImageElement>("[data-beta-render]");
       if (render) {
@@ -135,19 +214,7 @@ export function initBetaRedeem() {
       const uuid = $<HTMLElement>("[data-beta-uuid]");
       if (uuid) uuid.textContent = data.tester.mc_uuid ?? "";
 
-      const buildBox = $<HTMLElement>("[data-beta-build]");
-      if (buildBox) buildBox.hidden = !data.build;
-      if (data.build) {
-        const set = (sel: string, value: string) => {
-          const el = $<HTMLElement>(sel);
-          if (el) el.textContent = value;
-        };
-        set("[data-beta-build-version]", data.build.version);
-        set("[data-beta-build-platform]", data.build.platform);
-        set("[data-beta-build-size]", formatBytes(data.build.size_bytes));
-      }
-      if (confirmBtn) confirmBtn.disabled = !data.build;
-
+      renderPicker();
       show("confirm");
     } catch {
       setError(error, "Couldn't reach the server. Check your connection.");
@@ -158,13 +225,15 @@ export function initBetaRedeem() {
 
   confirmBtn?.addEventListener("click", async () => {
     if (!token) return;
+    const selected = selectedBuild();
+    if (!selected) return setError(confirmError, REASONS.platform_required);
     setError(confirmError, "");
     busy(confirmBtn, true, "Creating link…");
     try {
       const res = await fetch("/api/beta/confirm", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token, build_id: buildId, confirmed: true }),
+        body: JSON.stringify({ token, build_id: selected.id, confirmed: true }),
       });
       if (!res.ok) return setError(confirmError, await readError(res));
 

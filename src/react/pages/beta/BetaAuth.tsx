@@ -6,6 +6,16 @@ import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/site/Logo";
 import { AlertTriangle, ArrowLeft, Check, Download, Loader2, ShieldCheck } from "lucide-react";
 import { ApiError, confirmBetaIdentity, verifyBetaToken, type BetaVerifyResponse } from "@/lib/api";
+import {
+  BETA_ARCH_OPTIONS,
+  BETA_OS_OPTIONS,
+  detectArch,
+  detectOs,
+  pickBuild,
+  platformLabel,
+  type BetaArch,
+  type BetaOs,
+} from "@/lib/beta-platforms";
 import { toast } from "sonner";
 
 type Step = "token" | "confirm" | "link";
@@ -26,6 +36,7 @@ function readableError(e: unknown) {
     if (parsed.reason === "revoked") return "This token was revoked. Ask staff for a new one.";
     if (parsed.reason === "expired") return "This token has expired.";
     if (parsed.reason === "no_build") return "No beta build has been published yet.";
+    if (parsed.reason === "platform_required") return "Pick the OS and architecture that match your machine.";
     return parsed.error ?? "Something went wrong.";
   } catch {
     return raw || "Something went wrong.";
@@ -37,11 +48,14 @@ export default function BetaAuth() {
   const [token, setToken] = useState("");
   const [busy, setBusy] = useState(false);
   const [verified, setVerified] = useState<BetaVerifyResponse | null>(null);
+  const [os, setOs] = useState<BetaOs>(detectOs);
+  const [arch, setArch] = useState<BetaArch>("arm64");
   const [link, setLink] = useState<{ url: string; expires_at: string; filename: string } | null>(null);
   const [secondsLeft, setSecondsLeft] = useState(0);
 
   useEffect(() => {
     document.title = "Beta · Comet Client";
+    void detectArch().then(setArch);
   }, []);
 
   // Count the one-time link down so nobody sits on an expired URL.
@@ -74,9 +88,10 @@ export default function BetaAuth() {
     if (!verified) return;
     setBusy(true);
     try {
+      const selected = pickBuild(verified.builds ?? (verified.build ? [verified.build] : []), os, arch);
       const result = await confirmBetaIdentity({
         token: token.trim(),
-        build_id: verified.build?.id,
+        build_id: selected?.id ?? verified.build?.id,
       });
       setLink({
         url: result.url,
@@ -157,26 +172,73 @@ export default function BetaAuth() {
               </div>
             </div>
 
-            {verified.build ? (
-              <div className="rounded-lg bg-white/5 p-3 mb-4 text-sm">
-                <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">Build</span>
-                  <span className="font-mono">{verified.build.version}</span>
+            {(() => {
+              const catalog = verified.builds ?? (verified.build ? [verified.build] : []);
+              const selected = pickBuild(catalog, os, arch);
+              if (!catalog.length) {
+                return (
+                  <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-3 mb-4 text-sm text-amber-200">
+                    No beta build is published yet — your token is still unspent.
+                  </div>
+                );
+              }
+              return (
+                <div className="rounded-lg bg-white/5 p-3 mb-4 text-sm space-y-3">
+                  {!verified.pinned_build && (
+                    <>
+                      <div>
+                        <div className="text-muted-foreground mb-1.5">Operating system</div>
+                        <div className="flex flex-wrap gap-1.5">
+                          {BETA_OS_OPTIONS.map((opt) => (
+                            <button
+                              key={opt.id}
+                              type="button"
+                              className={`rounded-md px-2.5 py-1 text-xs ${os === opt.id ? "bg-primary/20 text-primary" : "bg-white/5 text-muted-foreground hover:text-foreground"}`}
+                              onClick={() => setOs(opt.id)}
+                            >
+                              {opt.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-muted-foreground mb-1.5">Architecture</div>
+                        <div className="flex flex-wrap gap-1.5">
+                          {BETA_ARCH_OPTIONS.map((opt) => (
+                            <button
+                              key={opt.id}
+                              type="button"
+                              className={`rounded-md px-2.5 py-1 text-xs ${arch === opt.id ? "bg-primary/20 text-primary" : "bg-white/5 text-muted-foreground hover:text-foreground"}`}
+                              onClick={() => setArch(opt.id)}
+                            >
+                              {opt.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </>
+                  )}
+                  {selected ? (
+                    <>
+                      <div className="flex items-center justify-between">
+                        <span className="text-muted-foreground">Build</span>
+                        <span className="font-mono">{selected.version}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-muted-foreground">Platform</span>
+                        <span className="font-mono">{platformLabel(selected.platform)}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-muted-foreground">Size</span>
+                        <span className="font-mono">{formatBytes(selected.size_bytes)}</span>
+                      </div>
+                    </>
+                  ) : (
+                    <p className="text-amber-200">No active build for {os} {arch}. Try the other architecture.</p>
+                  )}
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">Platform</span>
-                  <span className="font-mono">{verified.build.platform}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">Size</span>
-                  <span className="font-mono">{formatBytes(verified.build.size_bytes)}</span>
-                </div>
-              </div>
-            ) : (
-              <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-3 mb-4 text-sm text-amber-200">
-                No beta build is published yet — your token is still unspent.
-              </div>
-            )}
+              );
+            })()}
 
             <div className="flex gap-2">
               <Button
@@ -194,7 +256,14 @@ export default function BetaAuth() {
                 variant="glow"
                 className="flex-1"
                 onClick={confirmIdentity}
-                disabled={busy || !verified.build}
+                disabled={
+                  busy ||
+                  !pickBuild(
+                    verified.builds ?? (verified.build ? [verified.build] : []),
+                    os,
+                    arch,
+                  )
+                }
               >
                 {busy ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
                 {busy ? "Working…" : "That's me"}

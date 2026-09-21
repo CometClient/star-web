@@ -87,11 +87,22 @@
       </div>
     </div>
 
+    <div class="beta-platform" data-beta-platform-picker hidden>
+      <p class="beta-platform__label">Operating system</p>
+      <div class="beta-chips" data-beta-os></div>
+      <p class="beta-platform__label">Architecture</p>
+      <div class="beta-chips" data-beta-arch></div>
+    </div>
+
     <dl class="beta-build" data-beta-build hidden>
       <div><dt>Build</dt><dd data-beta-build-version></dd></div>
       <div><dt>Platform</dt><dd data-beta-build-platform></dd></div>
       <div><dt>Size</dt><dd data-beta-build-size></dd></div>
     </dl>
+
+    <p class="beta-modal__error" data-beta-platform-empty hidden>
+      No active build for that OS and architecture. Try the other one.
+    </p>
 
     <p class="beta-modal__body">
       Confirming spends your token and creates a one-time download link.

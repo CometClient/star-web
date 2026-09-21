@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "wrangler dev",
-    "deploy": "wrangler deploy",
+    "deploy": "node -e \"require('fs').mkdirSync('.wrangler/deploy',{recursive:true}); require('fs').writeFileSync('.wrangler/deploy/config.json', JSON.stringify({configPath:'../../wrangler.toml'}))\" && wrangler deploy",
     "d1:create": "wrangler d1 create comet-cms",
     "d1:migrate:local": "wrangler d1 migrations apply comet-cms --local",
     "d1:migrate:remote": "wrangler d1 migrations apply comet-cms --remote",

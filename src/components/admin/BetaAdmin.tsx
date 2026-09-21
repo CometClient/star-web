@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { platformLabel } from "@/lib/beta-platforms";
 
 type Tester = {
   id: string;
@@ -120,7 +121,7 @@ export default function BetaAdmin() {
   const [revealed, setRevealed] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
 
-  const [upload, setUpload] = useState({ version: "", platform: "universal", notes: "" });
+  const [upload, setUpload] = useState({ version: "", platform: "windows-x64", notes: "" });
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState<number | null>(null);
@@ -205,7 +206,7 @@ export default function BetaAdmin() {
 
   const finishUpload = async () => {
     setFile(null);
-    setUpload({ version: "", platform: "universal", notes: "" });
+    setUpload({ version: "", platform: "windows-x64", notes: "" });
     await Promise.all([loadBuilds(), loadAnalytics()]);
   };
 
@@ -509,10 +510,16 @@ export default function BetaAdmin() {
                   value={upload.platform}
                   onChange={(e) => setUpload({ ...upload, platform: e.target.value })}
                 >
+                  <option value="windows-x64">Windows · x64</option>
+                  <option value="windows-arm64">Windows · ARM64</option>
+                  <option value="macos-arm64">macOS · Apple Silicon (arm64)</option>
+                  <option value="macos-x64">macOS · Intel (x64)</option>
+                  <option value="linux-x64">Linux · x64</option>
+                  <option value="linux-arm64">Linux · ARM64</option>
+                  <option value="windows">Windows (any arch)</option>
+                  <option value="macos">macOS (any arch)</option>
+                  <option value="linux">Linux (any arch)</option>
                   <option value="universal">universal</option>
-                  <option value="windows">windows</option>
-                  <option value="macos">macos</option>
-                  <option value="linux">linux</option>
                 </select>
               </div>
               <div>
@@ -558,7 +565,7 @@ export default function BetaAdmin() {
               <div key={b.id} className="flex items-center justify-between rounded-lg border border-white/10 bg-white/[0.02] px-4 py-3">
                 <div>
                   <p className="font-medium">
-                    {b.version} <span className="text-white/35">· {b.platform}</span>
+                    {b.version} <span className="text-white/35">· {platformLabel(b.platform)}</span>
                     {!b.is_active && (
                       <span className="ml-2 rounded bg-white/10 px-1.5 py-0.5 text-[10px] uppercase text-white/50">inactive</span>
                     )}
@@ -603,7 +610,7 @@ export default function BetaAdmin() {
               {analytics.downloads_by_build.map((row) => (
                 <div key={String(row.id)} className="flex justify-between rounded-lg border border-white/10 bg-white/[0.02] px-4 py-2 text-sm">
                   <span>
-                    {String(row.version)} <span className="text-white/35">· {String(row.platform)}</span>
+                    {String(row.version)} <span className="text-white/35">· {platformLabel(String(row.platform))}</span>
                   </span>
                   <span className="font-mono">{String(row.downloads ?? 0)}</span>
                 </div>

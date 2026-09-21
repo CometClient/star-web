@@ -430,6 +430,16 @@ export interface BetaVerifyResponse {
     sha256: string | null;
     notes: string | null;
   } | null;
+  builds?: {
+    id: string;
+    version: string;
+    platform: string;
+    filename: string;
+    size_bytes: number;
+    sha256: string | null;
+    notes: string | null;
+  }[];
+  pinned_build?: boolean;
   link_ttl_seconds: number;
 }
 

@@ -87,3 +87,26 @@ export function skinUrls(username: string | null, uuid: string | null) {
 }
 
 export { resolveUsername };
+
+/** Fold amd64 / aarch64 / darwin-style names into the tags staff pick in admin. */
+export function normalizePlatformTag(raw: string): string {
+  let p = raw.trim().toLowerCase().replace(/[_\s]+/g, "-");
+  p = p.replace(/amd64|x86[_-]?64|intel/g, "x64");
+  p = p.replace(/aarch64|arm_64/g, "arm64");
+  p = p.replace(/^darwin/, "macos");
+  p = p.replace(/^(win32|win)(?=-|$)/, "windows");
+  p = p.replace(/^(windows|macos|linux)(x64|arm64)$/, "$1-$2");
+  return p || "universal";
+}
+
+export function publicBuild(build: BetaBuild) {
+  return {
+    id: build.id,
+    version: build.version,
+    platform: build.platform,
+    filename: build.filename,
+    size_bytes: build.size_bytes,
+    sha256: build.sha256,
+    notes: build.notes,
+  };
+}
